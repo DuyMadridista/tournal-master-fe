@@ -3,7 +3,8 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { DataFetchingProvider } from "../context/DataFetchingContext"
 import MainLayout from "../components/layout/MainLayout"
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <DataFetchingProvider>
           <MainLayout>{children}</MainLayout>
         </DataFetchingProvider>
+        <ToastContainer   position="top-right" autoClose={3000}/>
       </body>
     </html>
   )

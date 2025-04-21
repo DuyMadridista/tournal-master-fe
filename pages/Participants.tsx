@@ -4,177 +4,229 @@ import { useState, useEffect } from "react"
 import type { Team } from "../types/tournament"
 import ActionToolbar from "../components/ui-elements/ActionToolbar"
 import { Plus, FileUp, Grid, Pencil, Trash, Users, Mail, Phone, UserCircle } from "lucide-react"
-import { useDataFetching } from "../context/DataFetchingContext"
 import SkeletonLoader from "../components/ui-elements/SkeletonLoader"
 import PlayerManagementModal from "../components/player-management/PlayerManagementModal"
+import axios from "axios"
+import api from '../apis/api'
+import { getLocalStorage } from "@/utils/localStorage"
+import React from "react"
+import { toast } from "react-toastify";
 
-// Sample data for demonstration
-const sampleTeams: Team[] = [
-  {
-    id: "team-1",
-    name: "FC Barcelona",
-    tier: "A",
-    group: "A",
-    leaderName: "Carlos Rodriguez",
-    leaderEmail: "carlos@example.com",
-    phoneNumber: "+1234567890",
-    playerCount: 18,
-  },
-  {
-    id: "team-2",
-    name: "Real Madrid",
-    tier: "A",
-    group: "B",
-    leaderName: "Miguel Fernandez",
-    leaderEmail: "miguel@example.com",
-    phoneNumber: "+0987654321",
-    playerCount: 20,
-  },
-  {
-    id: "team-3",
-    name: "Manchester United",
-    tier: "A",
-    group: "C",
-    leaderName: "James Wilson",
-    leaderEmail: "james@example.com",
-    phoneNumber: "+1122334455",
-    playerCount: 22,
-  },
-  {
-    id: "team-4",
-    name: "Bayern Munich",
-    tier: "A",
-    group: "D",
-    leaderName: "Hans Mueller",
-    leaderEmail: "hans@example.com",
-    phoneNumber: "+6677889900",
-    playerCount: 19,
-  },
-]
+
+interface ParticipantsProps {
+  tournamentId?: string
+}
+
+interface ApiTeam {
+  teamId: number
+  teamName: string
+  tier: number | string
+  group: string
+  leaderName: string
+  leaderEmail: string
+  leaderPhoneNumber: string
+  playerCount: number
+}
+
+interface ApiResponse {
+  success: boolean
+  total: number
+  statusCode: number
+  message: string
+  data: ApiTeam[]
+  additionalData: {
+    totalTeamOfTournament: number
+  }
+}
+
+  
 
 interface ParticipantsProps {
   tournamentId?: string
 }
 
 export default function Participants({ tournamentId }: ParticipantsProps) {
+
   const [teams, setTeams] = useState<Team[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [showAddForm, setShowAddForm] = useState(false)
   const [newTeam, setNewTeam] = useState<Partial<Team>>({
     name: "",
-    tier: "A",
+    tier: 1,
     leaderName: "",
     leaderEmail: "",
     phoneNumber: "",
     playerCount: 0,
   })
   const [isInitialLoading, setIsInitialLoading] = useState(true)
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
-  const { simulateFetch, isLoading } = useDataFetching()
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [sortValue, setSortValue] = useState<string>("teamName")
+  const [sortType, setSortType] = useState<"ASC"|"DESC">("ASC")
+  const token = getLocalStorage('token')
 
-  // Simulate initial data loading
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Simulate API call with a longer delay for initial load
-        const data = await simulateFetch(sampleTeams, 2000)
-        setTeams(data)
-      } catch (error) {
-        console.error("Failed to load teams:", error)
-      } finally {
-        setIsInitialLoading(false)
-      }
+  // Fetch teams from API
+  const fetchTeams = React.useCallback(async () => {
+    if (!tournamentId) return;
+    setIsInitialLoading(true)
+    setError(null)
+    try {
+      const res = await api.get<ApiResponse>(
+        `/tournament/${tournamentId}/team`,
+        {
+          params: {
+            page: currentPage,
+            keyword: searchQuery,
+            sortValue: sortValue,
+            sortType: sortType,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      // Map API data to Team[]
+      const apiData = res.data.data as ApiTeam[]
+      console.log(res.data.additionalData)
+      const mapped: Team[] = apiData.map((item) => ({
+        id: String(item.teamId),
+        name: item.teamName,
+        tier: Number(item.tier),
+        group: item.group,
+        leaderName: item.leaderName,
+        leaderEmail: item.leaderEmail,
+        phoneNumber: item.leaderPhoneNumber,
+        playerCount: item.playerCount,
+      }))
+      setTeams(mapped)
+      setTotalPages(Math.ceil(res.data.additionalData.totalTeamOfTournament / 10) || 1)
+    } catch (err: any) {
+      setError("Failed to load teams")
+    } finally {
+      setIsInitialLoading(false)
     }
+  }, [tournamentId, currentPage, searchQuery, sortValue, sortType, token]);
 
-    loadData()
-  }, [simulateFetch])
+  useEffect(() => {
+    fetchTeams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchTeams]);
 
-  const filteredTeams = teams.filter(
-    (team) =>
-      team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      team.leaderName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      team.leaderEmail.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const handleSort = (field: string) => {
+    if (sortValue === field) {
+      setSortType(prev => prev === "ASC" ? "DESC" : "ASC")
+    } else {
+      setSortValue(field)
+      setSortType("ASC")
+    }
+    setCurrentPage(1)
+  }
+
+  // No need to filter locally, server handles filter
+  const filteredTeams = teams
 
   const handleAddTeam = async () => {
-    if (!newTeam.name || !newTeam.leaderName || !newTeam.leaderEmail) return
-
-    const team: Team = {
-      id: `team-${Date.now()}`,
-      name: newTeam.name,
-      tier: newTeam.tier || "A",
-      group: "",
-      leaderName: newTeam.leaderName,
-      leaderEmail: newTeam.leaderEmail,
-      phoneNumber: newTeam.phoneNumber || "",
-      playerCount: newTeam.playerCount || 0,
-    }
-
+    if (!newTeam.name || !newTeam.leaderName || !newTeam.leaderEmail) return;
+    if (!tournamentId) return;
+    setIsLoading(true);
+    setError(null);
     try {
-      // Simulate API call to add a team
-      await simulateFetch(team, 1500)
-      setTeams([...teams, team])
+      const payload = {
+        teamName: newTeam.name,
+        tier: newTeam.tier || 1,
+        group: newTeam.group || "",
+        leaderName: newTeam.leaderName,
+        leaderEmail: newTeam.leaderEmail,
+        leaderPhoneNumber: newTeam.phoneNumber || "",
+        playerCount: newTeam.playerCount || 0,
+      };
+      await api.post(`/tournament/${tournamentId}/team`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setShowAddForm(false);
       setNewTeam({
         name: "",
-        tier: "A",
+        tier: 1,
         leaderName: "",
         leaderEmail: "",
         phoneNumber: "",
         playerCount: 0,
-      })
-      setShowAddForm(false)
-    } catch (error) {
-      console.error("Failed to add team:", error)
+      });
+      setCurrentPage(1);
+      // Immediately refresh list after add
+      fetchTeams();
+      toast.success("The team was added successfully.");
+    } catch (error: any) {
+      setError("Failed to add team");
+      toast.error((error && (error.message || error.toString())) || "Failed to add team.");
+      console.error("Failed to add team:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
-  const handleImportTeams = async () => {
+  // File input ref for import
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+
+  // Trigger file input when Import Teams button is clicked
+  const handleImportTeams = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Handle file selection and import
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !tournamentId) return;
+    setImportLoading(true);
+    setError(null);
     try {
-      // Simulate API call to import teams
-      const newTeams = await simulateFetch(
-        [
-          {
-            id: "team-import-1",
-            name: "Chelsea",
-            tier: "A",
-            group: "B",
-            leaderName: "Frank Lampard",
-            leaderEmail: "frank@example.com",
-            phoneNumber: "+4455667788",
-            playerCount: 21,
-          },
-          {
-            id: "team-import-2",
-            name: "Arsenal",
-            tier: "A",
-            group: "C",
-            leaderName: "Mikel Arteta",
-            leaderEmail: "mikel@example.com",
-            phoneNumber: "+9988776655",
-            playerCount: 20,
-          },
-        ],
-        2000,
-      )
-      setTeams([...teams, ...newTeams])
+      const formData = new FormData();
+      formData.append("file", file);
+      await api.post(`/tournament/${tournamentId}/team/import`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": 'multipart/form-data'
+        },
+      });
+      // Refresh the list after import
+      fetchTeams();
+      toast.success("Teams were imported successfully.");
     } catch (error) {
-      console.error("Failed to import teams:", error)
+      setError("Failed to import teams");
+      toast.error((error && (error.message || error.toString())) || "Failed to import teams.");
+      console.error("Failed to import teams:", error);
+    } finally {
+      setImportLoading(false);
+      // Reset file input so user can re-upload the same file if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  }
+  };
 
   const handleGenerateGroups = async () => {
+    if (!tournamentId) return;
+    setIsLoading(true);
+    setError(null);
     try {
-      // Simulate API call to generate groups
-      const updatedTeams = await simulateFetch(
-        teams.map((team, index) => ({
-          ...team,
-          group: String.fromCharCode(65 + (index % 4)), // Assign A, B, C, D groups
-        })),
-        2500,
-      )
-      setTeams(updatedTeams)
+      await api.post(`/tournament/${tournamentId}/generate-groups`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Refresh the list after generating groups
+      fetchTeams();
+      toast.success("Groups were generated successfully.");
     } catch (error) {
-      console.error("Failed to generate groups:", error)
+      setError("Failed to generate groups");
+      toast.error((error && (error.message || error.toString())) || "Failed to generate groups.");
+      console.error("Failed to generate groups:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -183,21 +235,45 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
     alert(`Edit team with ID: ${teamId}`)
   }
 
-  const handleDeleteTeam = async (teamId: string) => {
-    // In a real app, this would show a confirmation dialog
-    if (window.confirm("Are you sure you want to delete this team?")) {
-      try {
-        // Simulate API call to delete a team
-        await simulateFetch(null, 1000)
-        setTeams(teams.filter((team) => team.id !== teamId))
-      } catch (error) {
-        console.error("Failed to delete team:", error)
-      }
-    }
-  }
+  // State for delete confirmation popup
+  const [teamIdToDelete, setTeamIdToDelete] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const handleManagePlayers = (teamId: string) => {
-    setSelectedTeamId(teamId)
+  // Show the confirmation dialog instead of window.confirm
+  const handleDeleteTeam = (teamId: string) => {
+    setTeamIdToDelete(teamId);
+  };
+
+  // Confirm deletion and call API
+  const confirmDeleteTeam = async () => {
+    if (!tournamentId || !teamIdToDelete) return;
+    setDeleteLoading(true);
+    setError(null);
+    try {
+      await api.delete(`/tournament/${tournamentId}/team/${teamIdToDelete}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setTeamIdToDelete(null);
+      fetchTeams();
+      toast.success("The team was deleted successfully.");
+    } catch (error) {
+      setError("Failed to delete team");
+      toast.error((error && (error.message || error.toString())) || "Failed to delete team.");
+      console.error("Failed to delete team:", error);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // Cancel deletion
+  const cancelDeleteTeam = () => {
+    setTeamIdToDelete(null);
+  };
+
+  const handleManagePlayers = (team: Team) => {
+    setSelectedTeam(team)
   }
 
   if (isInitialLoading) {
@@ -245,11 +321,18 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
         <button
           onClick={handleImportTeams}
           className="btn btn-md btn-secondary flex items-center space-x-2"
-          disabled={isLoading}
+          disabled={isLoading || importLoading}
         >
           <FileUp className="h-5 w-5" />
-          <span>Import Teams</span>
+          <span>{importLoading ? "Importing..." : "Import Teams"}</span>
         </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
 
         <button
           onClick={handleGenerateGroups}
@@ -276,7 +359,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
                 value={newTeam.name}
                 onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
                 className="input"
-                placeholder="FC Barcelona"
+                placeholder="Real Madrid CF"
               />
             </div>
 
@@ -284,12 +367,14 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
               <label className="block text-sm font-medium text-neutral-700 mb-1">Tier</label>
               <select
                 value={newTeam.tier}
-                onChange={(e) => setNewTeam({ ...newTeam, tier: e.target.value })}
+                onChange={(e) => setNewTeam({ ...newTeam, tier: Number(e.target.value) })}
                 className="input"
               >
-                <option value="A">Tier A</option>
-                <option value="B">Tier B</option>
-                <option value="C">Tier C</option>
+                <option value="1">Tier 1</option>
+                <option value="2">Tier 2</option>
+                <option value="3">Tier 3</option>
+                <option value="4">Tier 4</option>
+                <option value="5">Tier 5</option>
               </select>
             </div>
 
@@ -325,18 +410,6 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
                 placeholder="+1234567890"
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Number of Players</label>
-              <input
-                type="number"
-                value={newTeam.playerCount || ""}
-                onChange={(e) => setNewTeam({ ...newTeam, playerCount: Number(e.target.value) })}
-                className="input"
-                placeholder="18"
-                min="0"
-              />
-            </div>
           </div>
 
           <div className="flex justify-end space-x-3">
@@ -355,10 +428,10 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
           <thead className="table-header">
             <tr>
               <th className="table-head">No.</th>
-              <th className="table-head">Team Name</th>
-              <th className="table-head">Tier</th>
-              <th className="table-head">Group</th>
-              <th className="table-head">Leader Name</th>
+              <th className="table-head cursor-pointer" onClick={() => handleSort("teamName")}>Team Name {sortValue === "teamName" && (sortType === "ASC" ? "▲" : "▼")}</th>
+              <th className="table-head cursor-pointer" onClick={() => handleSort("tier")}>Tier {sortValue === "tier" && (sortType === "ASC" ? "▲" : "▼")}</th>
+              <th className="table-head cursor-pointer" onClick={() => handleSort("group")}>Group {sortValue === "group" && (sortType === "ASC" ? "▲" : "▼")}</th>
+              <th className="table-head cursor-pointer" onClick={() => handleSort("leaderName")}>Leader {sortValue === "leaderName" && (sortType === "ASC" ? "▲" : "▼")}</th>
               <th className="table-head">Leader Email</th>
               <th className="table-head">Phone Number</th>
               <th className="table-head">Players</th>
@@ -398,7 +471,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
                   </td>
                   <td className="table-cell">
                     <button
-                      onClick={() => handleManagePlayers(team.id)}
+                      onClick={() => handleManagePlayers(team)}
                       className="flex items-center text-primary-600 hover:text-primary-800 hover:underline"
                     >
                       <Users className="h-4 w-4 mr-1 text-primary-500" />
@@ -431,7 +504,72 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
       </div>
 
       {/* Player Management Modal */}
-      {selectedTeamId && <PlayerManagementModal teamId={selectedTeamId} onClose={() => setSelectedTeamId(null)} />}
+      {selectedTeam && (
+  <PlayerManagementModal
+    tournamentId={tournamentId}
+    team={selectedTeam}
+    onClose={() => {
+      setSelectedTeam(null);
+      fetchTeams();
+    }}
+  />
+)}
+
+      {/* Delete Confirmation Modal */}
+      {teamIdToDelete && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full animate-in border border-neutral-200">
+            <h2 className="text-xl font-semibold text-red-600 mb-4 flex items-center">
+              <Trash className="h-6 w-6 mr-2 text-red-500" />
+              Confirm Deletion
+            </h2>
+            <p className="mb-6 text-neutral-700">Are you sure you want to <span className="font-bold text-red-600">delete</span> this team? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelDeleteTeam}
+                className="btn btn-md btn-outline"
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteTeam}
+                className="btn btn-md btn-danger bg-red-600 text-white hover:bg-red-700"
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination Controls (bottom) */}
+      <div className="flex justify-end items-center mt-4 space-x-2">
+        <button
+          className="btn btn-sm"
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        {[...Array(totalPages)].map((_, idx) => (
+          <button
+            key={idx + 1}
+            className={`btn btn-sm ${currentPage === idx + 1 ? "btn-primary" : "btn-outline"}`}
+            onClick={() => setCurrentPage(idx + 1)}
+          >
+            {idx + 1}
+          </button>
+        ))}
+        <button
+          className="btn btn-sm"
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
     </div>
   )
 }

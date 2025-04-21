@@ -40,7 +40,7 @@ export interface Organizer {
 export interface Team {
   id: string
   name: string
-  tier?: string
+  tier?: number
   group?: string
   leaderName: string
   leaderEmail: string

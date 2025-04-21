@@ -3,13 +3,15 @@
 import { useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import PlayersList from "./PlayersList"
+import { Team } from "@/types/tournament"
 
 interface PlayerManagementModalProps {
-  teamId: string
+  tournamentId?: string
+  team: Team
   onClose: () => void
 }
 
-export default function PlayerManagementModal({ teamId, onClose }: PlayerManagementModalProps) {
+export default function PlayerManagementModal({ tournamentId, team, onClose }: PlayerManagementModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
 
   // Close modal when clicking outside
@@ -52,9 +54,9 @@ export default function PlayerManagementModal({ teamId, onClose }: PlayerManagem
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div
         ref={modalRef}
-        className="w-full max-w-5xl max-h-[90vh] overflow-auto bg-white rounded-lg shadow-xl animate-fade-in"
+        className="w-full max-w-4xl max-h-[90vh] overflow-auto bg-white rounded-lg shadow-xl animate-fade-in"
       >
-        <PlayersList teamId={teamId} onClose={onClose} />
+        <PlayersList tournamentId={tournamentId} team={team} onClose={onClose} />
       </div>
     </div>,
     document.body,
