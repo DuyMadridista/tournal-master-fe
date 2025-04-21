@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 import { Clock, MapPin, Award, Shirt, ArrowRightLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -9,6 +10,7 @@ interface Player {
   name: string
   number: number
   position: string
+  isCaptain?: boolean
 }
 
 interface MatchEvent {
@@ -28,7 +30,6 @@ interface MatchEvent {
 }
 
 interface LineupPlayer extends Player {
-  isCaptain?: boolean
   events?: MatchEvent[]
 }
 
@@ -37,33 +38,156 @@ interface Lineup {
   substitutes: LineupPlayer[]
 }
 
-interface MatchDetailTabsProps {
-  match: {
-    id: string
-    date: Date
-    time: string
-    venue: string
-    team1: {
-      id: string
-      name: string
-      score?: number
-    }
-    team2: {
-      id: string
-      name: string
-      score?: number
-    }
-    events: MatchEvent[]
-    lineups: {
-      team1: Lineup
-      team2: Lineup
-    }
-    completed: boolean
-  }
+interface TeamInfo {
+  id: string
+  name: string
+  score?: number
 }
 
-export default function MatchDetailTabs({ match }: MatchDetailTabsProps) {
+interface MatchDetail {
+  id: string
+  date: Date
+  startTime: string
+  endTime: string
+  venue: string
+  team1: TeamInfo
+  team2: TeamInfo
+  events: MatchEvent[]
+  lineups: {
+    team1: Lineup
+    team2: Lineup
+  }
+  completed: boolean
+}
+
+export default function MatchDetailTabs({ matchId }: { matchId: string }) {
   const [activeTab, setActiveTab] = useState<"general" | "details">("general")
+  const [match, setMatch] = useState<MatchDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchMatch() {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await axios.get(`http://localhost:6969/tournament/31/match/result/${matchId}`)
+        const data = res.data.data
+        const matchData = data.match
+        const players = data.listPlayerMatch
+        // Map teams
+        const team1 = {
+          id: matchData.teamOne.teamId.toString(),
+          name: matchData.teamOne.teamName,
+          score: matchData.teamOneResult ?? undefined
+        }
+        const team2 = {
+          id: matchData.teamTwo.teamId.toString(),
+          name: matchData.teamTwo.teamName,
+          score: matchData.teamTwoResult ?? undefined
+        }
+        // Map events
+        let events: MatchEvent[] = []
+        players.forEach((player: any) => {
+          // Goals
+          if (player.goalMinutes && player.goalMinutes.length > 0) {
+            player.goalMinutes.forEach((minute: number, idx: number) => {
+              events.push({
+                id: `goal-${player.id}-${idx}`,
+                type: "goal",
+                minute,
+                playerId: player.id.toString(),
+                playerName: player.name,
+                playerNumber: player.number,
+                teamId: player.teamId.toString(),
+                teamName: (player.teamId === matchData.teamOne.teamId ? matchData.teamOne.teamName : matchData.teamTwo.teamName),
+              })
+            })
+          }
+          // Yellow cards
+          if (player.yellowCardMinutes && player.yellowCardMinutes.length > 0) {
+            player.yellowCardMinutes.forEach((minute: number, idx: number) => {
+              events.push({
+                id: `yellow-${player.id}-${idx}`,
+                type: "yellow-card",
+                minute,
+                playerId: player.id.toString(),
+                playerName: player.name,
+                playerNumber: player.number,
+                teamId: player.teamId.toString(),
+                teamName: (player.teamId === matchData.teamOne.teamId ? matchData.teamOne.teamName : matchData.teamTwo.teamName),
+              })
+            })
+          }
+          // Red card
+          if (player.redCard && player.redCardMinute) {
+            events.push({
+              id: `red-${player.id}`,
+              type: "red-card",
+              minute: player.redCardMinute,
+              playerId: player.id.toString(),
+              playerName: player.name,
+              playerNumber: player.number,
+              teamId: player.teamId.toString(),
+              teamName: (player.teamId === matchData.teamOne.teamId ? matchData.teamOne.teamName : matchData.teamTwo.teamName),
+            })
+          }
+        })
+        // Map lineups
+        const startingXI1: LineupPlayer[] = players.filter((p: any) => p.teamId === matchData.teamOne.teamId && p.type === "starter").map((p: any) => ({
+          id: p.id.toString(),
+          name: p.name,
+          number: p.number,
+          position: "Unknown", // No position info in API
+        }))
+        const substitutes1: LineupPlayer[] = players.filter((p: any) => p.teamId === matchData.teamOne.teamId && p.type === "substitute").map((p: any) => ({
+          id: p.id.toString(),
+          name: p.name,
+          number: p.number,
+          position: "Unknown",
+        }))
+        const startingXI2: LineupPlayer[] = players.filter((p: any) => p.teamId === matchData.teamTwo.teamId && p.type === "starter").map((p: any) => ({
+          id: p.id.toString(),
+          name: p.name,
+          number: p.number,
+          position: "Unknown",
+        }))
+        const substitutes2: LineupPlayer[] = players.filter((p: any) => p.teamId === matchData.teamTwo.teamId && p.type === "substitute").map((p: any) => ({
+          id: p.id.toString(),
+          name: p.name,
+          number: p.number,
+          position: "Unknown",
+        }))
+        setMatch({
+          id: matchData.id.toString(),
+          date: new Date(data.match.eventDate.date),
+          startTime: matchData._startTime,
+          endTime: matchData._endTime,
+          venue: matchData.title || "",
+          team1,
+          team2,
+          events,
+          lineups: {
+            team1: { startingXI: startingXI1, substitutes: substitutes1 },
+            team2: { startingXI: startingXI2, substitutes: substitutes2 },
+          },
+          completed: typeof matchData.teamOneResult === "number" && typeof matchData.teamTwoResult === "number"
+        })
+      } catch (e: any) {
+        setError("Could not fetch match details.")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchMatch()
+  }, [matchId])
+
+  if (loading) {
+    return <div className="py-12 text-center text-neutral-500">Loading match details...</div>
+  }
+  if (error || !match) {
+    return <div className="py-12 text-center text-red-500">{error || "No match data found."}</div>
+  }
 
   // Group events by team
   const team1Events = match.events.filter((event) => event.teamId === match.team1.id)
@@ -82,7 +206,7 @@ export default function MatchDetailTabs({ match }: MatchDetailTabsProps) {
           <div className="flex items-center space-x-2 text-primary-100">
             <Clock className="h-4 w-4" />
             <span>
-              {new Date(match.date).toLocaleDateString()} - {match.time}
+              {match.date.toLocaleDateString()} - {match.startTime} - {match.endTime}
             </span>
             {match.venue && (
               <>
@@ -284,7 +408,7 @@ export default function MatchDetailTabs({ match }: MatchDetailTabsProps) {
                           )}
                         </div>
 
-                        <div className="text-sm text-neutral-500">{player.position}</div>
+                        {/* <div className="text-sm text-neutral-500">{player.position}</div> */}
                       </div>
                     ))}
                   </div>
@@ -300,7 +424,7 @@ export default function MatchDetailTabs({ match }: MatchDetailTabsProps) {
                           <span className="font-medium">{player.name}</span>
                         </div>
 
-                        <div className="text-sm text-neutral-500">{player.position}</div>
+                        {/* <div className="text-sm text-neutral-500">{player.position}</div> */}
                       </div>
                     ))}
                   </div>
@@ -329,7 +453,7 @@ export default function MatchDetailTabs({ match }: MatchDetailTabsProps) {
                           )}
                         </div>
 
-                        <div className="text-sm text-neutral-500">{player.position}</div>
+                        {/* <div className="text-sm text-neutral-500">{player.position}</div> */}
                       </div>
                     ))}
                   </div>
@@ -345,7 +469,7 @@ export default function MatchDetailTabs({ match }: MatchDetailTabsProps) {
                           <span className="font-medium">{player.name}</span>
                         </div>
 
-                        <div className="text-sm text-neutral-500">{player.position}</div>
+                        {/* <div className="text-sm text-neutral-500">{player.position}</div> */}
                       </div>
                     ))}
                   </div>

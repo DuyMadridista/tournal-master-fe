@@ -10,4 +10,14 @@ const api = axios.create({
   },
 });
 
+
+/**
+ * Fetch tournament details by ID
+ * @param id Tournament ID
+ */
+export async function getTournamentById(id: string | number) {
+  const res = await api.get(`/tournament/${id}`);
+  return res.data;
+}
+
 export default api;

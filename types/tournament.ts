@@ -1,11 +1,12 @@
 // Core types for the tournament management application
 
-export type TournamentFormat = "Group Stage" | "Round Robin" | "Single Elimination"
+export type TournamentFormat = "GROUP_STAGE" | "ROUND_ROBIN" | "SINGLE_ELIMINATION"
 
 export interface Tournament {
   id: string
   title: string
   category: string
+  organizer: Organizer[]
   format: TournamentFormat
   location: string
   description: string
@@ -90,7 +91,8 @@ export interface Lineup {
 export interface Match {
   id: string
   date: Date
-  time: string
+  startTime: string
+  endTime: string
   team1: Team
   team2: Team
   venue?: string

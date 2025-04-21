@@ -1,356 +1,141 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { Match, Team, TournamentFormat } from "../types/tournament"
+import type { Match, Team, Tournament } from "../types/tournament"
 import ActionToolbar from "../components/ui-elements/ActionToolbar"
 import { FileDown, Calendar, Clock, MapPin, Trophy, Eye } from "lucide-react"
 import MatchDetailTabs from "../components/match-details/MatchDetailTabs"
 import { useDataFetching } from "../context/DataFetchingContext"
 import LoadingSpinner from "../components/ui-elements/LoadingSpinner"
+import { getTournamentById } from "@/apis/api"
+import PDFResult from "../utils/pdfResult"
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import PDFDateResult from "../utils/PDFDateResult"
 
-// Sample data for demonstration
-const sampleTeams: Team[] = [
-  {
-    id: "team-1",
-    name: "FC Barcelona",
-    tier: "A",
-    group: "A",
-    leaderName: "Carlos Rodriguez",
-    leaderEmail: "carlos@example.com",
-    phoneNumber: "+1234567890",
-    playerCount: 18,
-  },
-  {
-    id: "team-2",
-    name: "Real Madrid",
-    tier: "A",
-    group: "B",
-    leaderName: "Miguel Fernandez",
-    leaderEmail: "miguel@example.com",
-    phoneNumber: "+0987654321",
-    playerCount: 20,
-  },
-  {
-    id: "team-3",
-    name: "Manchester United",
-    tier: "A",
-    group: "C",
-    leaderName: "James Wilson",
-    leaderEmail: "james@example.com",
-    phoneNumber: "+1122334455",
-    playerCount: 22,
-  },
-  {
-    id: "team-4",
-    name: "Bayern Munich",
-    tier: "A",
-    group: "D",
-    leaderName: "Hans Mueller",
-    leaderEmail: "hans@example.com",
-    phoneNumber: "+6677889900",
-    playerCount: 19,
-  },
-  {
-    id: "team-5",
-    name: "Liverpool",
-    tier: "A",
-    group: "A",
-    leaderName: "Steven Gerrard",
-    leaderEmail: "steven@example.com",
-    phoneNumber: "+1231231234",
-    playerCount: 21,
-  },
-  {
-    id: "team-6",
-    name: "PSG",
-    tier: "A",
-    group: "B",
-    leaderName: "Pierre Dubois",
-    leaderEmail: "pierre@example.com",
-    phoneNumber: "+3334445555",
-    playerCount: 20,
-  },
-  {
-    id: "team-7",
-    name: "Juventus",
-    tier: "A",
-    group: "C",
-    leaderName: "Marco Rossi",
-    leaderEmail: "marco@example.com",
-    phoneNumber: "+6667778888",
-    playerCount: 19,
-  },
-  {
-    id: "team-8",
-    name: "AC Milan",
-    tier: "A",
-    group: "D",
-    leaderName: "Paolo Maldini",
-    leaderEmail: "paolo@example.com",
-    phoneNumber: "+9990001111",
-    playerCount: 18,
-  },
-]
-
-// Generate sample matches with results
-const generateSampleMatches = (): Match[] => {
-  const matches: Match[] = []
-  const today = new Date()
-
-  // Group stage matches
-  for (let i = 0; i < 12; i++) {
-    const matchDate = new Date(today)
-    matchDate.setDate(today.getDate() - 7 + Math.floor(i / 4))
-
-    const team1Index = i % sampleTeams.length
-    const team2Index = (i + 1) % sampleTeams.length
-
-    const completed = i < 8
-
-    matches.push({
-      id: `match-${i + 1}`,
-      date: matchDate,
-      time: `${14 + (i % 3) * 2}:00`,
-      team1: sampleTeams[team1Index],
-      team2: sampleTeams[team2Index],
-      venue: `Field ${(i % 3) + 1}`,
-      round: `Group Stage - Round ${Math.floor(i / 4) + 1}`,
-      group: sampleTeams[team1Index].group,
-      completed,
-      score1: completed ? Math.floor(Math.random() * 5) : undefined,
-      score2: completed ? Math.floor(Math.random() * 5) : undefined,
-      events: completed ? generateMatchEvents(sampleTeams[team1Index], sampleTeams[team2Index]) : [],
-      lineups: {
-        team1: generateTeamLineup(sampleTeams[team1Index]),
-        team2: generateTeamLineup(sampleTeams[team2Index]),
-      },
-    })
-  }
-
-  return matches
+// API response types
+interface ApiMatch {
+  id: number;
+  teamOneId: number;
+  teamTwoId: number;
+  teamOneName: string;
+  teamTwoName: string;
+  teamOneResult: number | null;
+  teamTwoResult: number | null;
+  startTime: string;
+  endTime: string;
+  eventDateId: number;
+  title: string;
+  type: string;
+}
+interface ApiMatchGroup {
+  date: string;
+  matches: ApiMatch[];
+}
+interface ApiMatchResponse {
+  success: boolean;
+  total: number;
+  statusCode: number;
+  data: ApiMatchGroup[];
+}
+enum TournamentFormat {
+  GroupStage = "GROUP_STAGE",
+  RoundRobin = "ROUND_ROBIN",
+  SingleElimination = "SINGLE_ELIMINATION",
 }
 
-// Generate sample match events
-const generateMatchEvents = (team1: Team, team2: Team) => {
-  const events = []
-  const totalEvents = Math.floor(Math.random() * 10) + 5
 
-  for (let i = 0; i < totalEvents; i++) {
-    const eventType = ["goal", "yellow-card", "red-card", "substitution"][Math.floor(Math.random() * 4)]
-    const team = Math.random() > 0.5 ? team1 : team2
-    const minute = Math.floor(Math.random() * 90) + 1
-
-    events.push({
-      id: `event-${i}`,
-      type: eventType,
-      minute,
-      playerId: `player-${Math.floor(Math.random() * 11) + 1}`,
-      playerName: `Player ${Math.floor(Math.random() * 11) + 1}`,
-      playerNumber: Math.floor(Math.random() * 30) + 1,
-      teamId: team.id,
-      teamName: team.name,
-      additionalInfo:
-        eventType === "substitution"
-          ? {
-              substituteId: `player-${Math.floor(Math.random() * 7) + 12}`,
-              substituteName: `Player ${Math.floor(Math.random() * 7) + 12}`,
-              substituteNumber: Math.floor(Math.random() * 30) + 1,
-            }
-          : undefined,
-    })
-  }
-
-  return events.sort((a, b) => a.minute - b.minute)
-}
-
-// Generate sample team lineup
-const generateTeamLineup = (team: Team) => {
-  const startingXI = []
-  const substitutes = []
-
-  // Generate starting XI
-  for (let i = 1; i <= 11; i++) {
-    let position = "Forward"
-    if (i === 1) position = "Goalkeeper"
-    else if (i <= 5) position = "Defender"
-    else if (i <= 9) position = "Midfielder"
-
-    startingXI.push({
-      id: `player-${team.id}-${i}`,
-      name: `Player ${i}`,
-      number: i,
-      position,
-      isCaptain: i === 4,
-    })
-  }
-
-  // Generate substitutes
-  for (let i = 12; i <= 18; i++) {
-    let position = "Forward"
-    if (i === 12) position = "Goalkeeper"
-    else if (i <= 14) position = "Defender"
-    else if (i <= 16) position = "Midfielder"
-
-    substitutes.push({
-      id: `player-${team.id}-${i}`,
-      name: `Player ${i}`,
-      number: i,
-      position,
-    })
-  }
-
-  return {
-    startingXI,
-    substitutes,
-  }
-}
-
-// Generate knockout matches for single elimination format
-const generateKnockoutMatches = (): Match[] => {
-  const matches: Match[] = []
-  const today = new Date()
-
-  // Quarter-finals
-  for (let i = 0; i < 4; i++) {
-    const matchDate = new Date(today)
-    matchDate.setDate(today.getDate() - 7)
-
-    matches.push({
-      id: `qf-${i + 1}`,
-      date: matchDate,
-      time: `${14 + i * 2}:00`,
-      team1: sampleTeams[i * 2],
-      team2: sampleTeams[i * 2 + 1],
-      venue: `Field ${(i % 3) + 1}`,
-      round: "Quarter-final",
-      completed: true,
-      score1: Math.floor(Math.random() * 5),
-      score2: Math.floor(Math.random() * 3),
-      events: generateMatchEvents(sampleTeams[i * 2], sampleTeams[i * 2 + 1]),
-      lineups: {
-        team1: generateTeamLineup(sampleTeams[i * 2]),
-        team2: generateTeamLineup(sampleTeams[i * 2 + 1]),
-      },
-    })
-  }
-
-  // Semi-finals
-  const semifinalists = [
-    matches[0].score1! > matches[0].score2! ? matches[0].team1 : matches[0].team2,
-    matches[1].score1! > matches[1].score2! ? matches[1].team1 : matches[1].team2,
-    matches[2].score1! > matches[2].score2! ? matches[2].team1 : matches[2].team2,
-    matches[3].score1! > matches[3].score2! ? matches[3].team1 : matches[3].team2,
-  ]
-
-  for (let i = 0; i < 2; i++) {
-    const matchDate = new Date(today)
-    matchDate.setDate(today.getDate() - 3)
-
-    matches.push({
-      id: `sf-${i + 1}`,
-      date: matchDate,
-      time: `${16 + i * 3}:00`,
-      team1: semifinalists[i * 2],
-      team2: semifinalists[i * 2 + 1],
-      venue: `Field 1`,
-      round: "Semi-final",
-      completed: true,
-      score1: Math.floor(Math.random() * 4) + 1,
-      score2: Math.floor(Math.random() * 3),
-      events: generateMatchEvents(semifinalists[i * 2], semifinalists[i * 2 + 1]),
-      lineups: {
-        team1: generateTeamLineup(semifinalists[i * 2]),
-        team2: generateTeamLineup(semifinalists[i * 2 + 1]),
-      },
-    })
-  }
-
-  // Final
-  const finalists = [
-    matches[4].score1! > matches[4].score2! ? matches[4].team1 : matches[4].team2,
-    matches[5].score1! > matches[5].score2! ? matches[5].team1 : matches[5].team2,
-  ]
-
-  matches.push({
-    id: `final`,
-    date: today,
-    time: `18:00`,
-    team1: finalists[0],
-    team2: finalists[1],
-    venue: `Main Stadium`,
-    round: "Final",
-    completed: false,
-    score1: undefined,
-    score2: undefined,
-    events: [],
-    lineups: {
-      team1: generateTeamLineup(finalists[0]),
-      team2: generateTeamLineup(finalists[1]),
-    },
-  })
-
-  return matches
-}
-
-const sampleGroupMatches = generateSampleMatches()
-const sampleKnockoutMatches = generateKnockoutMatches()
-
-// Group matches by date
-const groupMatchesByDate = (matches: Match[]): Record<string, Match[]> => {
-  const grouped: Record<string, Match[]> = {}
-
+// Helper function to group matches by date
+function groupMatchesByDate(matches: Match[]): Record<string, Match[]> {
+  const grouped: Record<string, Match[]> = {};
   matches.forEach((match) => {
-    const dateStr = match.date.toISOString().split("T")[0]
+    const dateStr = match.date.toISOString().split("T")[0];
     if (!grouped[dateStr]) {
-      grouped[dateStr] = []
+      grouped[dateStr] = [];
     }
-    grouped[dateStr].push(match)
-  })
-
-  return grouped
+    grouped[dateStr].push(match);
+  });
+  return grouped;
 }
 
 interface ResultProps {
-  tournamentId?: string
+  tournamentId: string | number
 }
 
 export default function Result({ tournamentId }: ResultProps) {
-  const [format, setFormat] = useState<TournamentFormat>("Group Stage")
+  // Remove format state, use tournament?.format instead
   const [groupMatches, setGroupMatches] = useState<Match[]>([])
   const [knockoutMatches, setKnockoutMatches] = useState<Match[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const { simulateFetch } = useDataFetching()
-
-  // Load match data
+  const [tournament, setTournament]= useState<Tournament | null>(null)
+  
+  const getResultForPDF = () => {
+    // Group matches by date (YYYY-MM-DD)
+    const grouped: Record<string, any[]> = {};
+    matches.forEach((match) => {
+      const dateStr = match.date.toISOString().split("T")[0];
+      if (!grouped[dateStr]) grouped[dateStr] = [];
+      grouped[dateStr].push({
+        startTime: match.startTime,
+        endTime: match.endTime,
+        teamOneName: match.team1.name,
+        teamTwoName: match.team2.name,
+        teamOneResult: match.score1?.toString() ?? "",
+        teamTwoResult: match.score2?.toString() ?? "",
+      });
+    });
+    // Convert to array of { date, matches }
+    return Object.entries(grouped).map(([date, matches]) => ({ date, matches }));
+  };
+  // Load match data from API
   useEffect(() => {
     const loadData = async () => {
+      setIsLoading(true);
       try {
-        // Simulate API calls
-        const groupData = await simulateFetch(sampleGroupMatches, 1500)
-        const knockoutData = await simulateFetch(sampleKnockoutMatches, 500)
-
-        setGroupMatches(groupData)
-        setKnockoutMatches(knockoutData)
+        const tournament2= await getTournamentById(tournamentId)
+        setTournament(tournament2.data)
+        const response = await fetch(`http://localhost:6969/tournament/${tournamentId}/match/result`);
+        const data: ApiMatchResponse = await response.json();
+        console.log(data.data);
+        // Map API data to Match[]
+        const allMatches: Match[] = data.data.flatMap(group =>
+          group.matches.map(match => ({
+            id: match.id.toString(),
+            date: new Date(group.date),
+            startTime: match.startTime,
+            endTime: match.endTime,
+            team1: { id: match.teamOneId.toString(), name: match.teamOneName, leaderName: "", leaderEmail: "", phoneNumber: "", playerCount: 0 },
+            team2: { id: match.teamTwoId.toString(), name: match.teamTwoName, leaderName: "", leaderEmail: "", phoneNumber: "", playerCount: 0 },
+            venue: match.title || "",
+            round: undefined,
+            group: undefined,
+            completed: match.teamOneResult !== null && match.teamTwoResult !== null,
+            score1: match.teamOneResult ?? undefined,
+            score2: match.teamTwoResult ?? undefined,
+            events: [],
+            lineups: undefined,
+          }))
+        );
+        setGroupMatches(allMatches);
+        setKnockoutMatches([]); // If you have knockout data, map and set here
       } catch (error) {
-        console.error("Failed to load match data:", error)
+        console.error("Failed to load match data:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
+    loadData();
+  }, []);
 
-    loadData()
-  }, [simulateFetch])
-
-  const matches = format === "Single Elimination" ? knockoutMatches : groupMatches
+  const matches = tournament?.format?.toString() === TournamentFormat.SingleElimination ? knockoutMatches : groupMatches;
 
   const filteredMatches = matches.filter(
     (match) =>
       match.team1.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       match.team2.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (match.venue && match.venue.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (match.round && match.round.toLowerCase().includes(searchQuery.toLowerCase())),
+      (match.round && match.round.toLowerCase().includes(searchQuery.toLowerCase())), 
   )
 
   const groupedMatches = groupMatchesByDate(filteredMatches)
@@ -360,12 +145,10 @@ export default function Result({ tournamentId }: ResultProps) {
     alert("Export results functionality would be implemented here")
   }
 
-  const handleFormatChange = (newFormat: TournamentFormat) => {
-    setFormat(newFormat)
-  }
+  // Removed handleFormatChange. Format is now determined by tournament?.format.
 
   const handleScoreChange = (matchId: string, team: "team1" | "team2", score: number) => {
-    if (format === "Single Elimination") {
+    if (tournament?.format?.toString() === TournamentFormat.SingleElimination) {
       setKnockoutMatches(
         knockoutMatches.map((match) => {
           if (match.id === matchId) {
@@ -414,49 +197,33 @@ export default function Result({ tournamentId }: ResultProps) {
     )
   }
 
+  // Guard: If tournament is not loaded, show nothing or a fallback
+  if (!tournament) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <ActionToolbar title="Results" totalItems={matches.length} onSearch={setSearchQuery}>
-        <button
-          onClick={handleExportResults}
-          className="flex items-center space-x-2 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+        <PDFDownloadLink
+          style={{ color: 'blue', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+          document={
+            <PDFResult
+              result={getResultForPDF()}
+              titleTournament={tournament?.title || ''}
+              category={tournament?.category || ''}
+              organizer={tournament?.organizer[0].fullName || ''}
+            />
+          }
+          fileName={`${tournament?.title || 'tournament'}_Result.pdf`}
         >
-          <FileDown className="h-5 w-5" />
-          <span>Export Results</span>
-        </button>
-
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handleFormatChange("Group Stage")}
-            className={`px-4 py-2 rounded-md ${
-              format === "Group Stage"
-                ? "bg-primary-500 text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Group Stage
-          </button>
-          <button
-            onClick={() => handleFormatChange("Round Robin")}
-            className={`px-4 py-2 rounded-md ${
-              format === "Round Robin"
-                ? "bg-primary-500 text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Round Robin
-          </button>
-          <button
-            onClick={() => handleFormatChange("Single Elimination")}
-            className={`px-4 py-2 rounded-md ${
-              format === "Single Elimination"
-                ? "bg-primary-500 text-white"
-                : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Knockout
-          </button>
-        </div>
+          {({ loading }) => (
+            <span className="flex items-center space-x-2 px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors cursor-pointer">
+              <FileDown className="h-5 w-5" />
+              <span>{loading ? 'Generating PDF...' : 'Export Results'}</span>
+            </span>
+          )}
+        </PDFDownloadLink>
       </ActionToolbar>
 
       {/* Match Details View */}
@@ -468,11 +235,11 @@ export default function Result({ tournamentId }: ResultProps) {
               Back to Results
             </button>
           </div>
-          <MatchDetailTabs match={selectedMatch} />
+          <MatchDetailTabs matchId={selectedMatch.id} />
         </div>
       )}
 
-      {!selectedMatch && (format === "Group Stage" || format === "Round Robin") && (
+      {!selectedMatch && (tournament.format?.toString() === TournamentFormat.GroupStage || tournament.format?.toString() === TournamentFormat.RoundRobin) && (
         <div className="space-y-8">
           {Object.keys(groupedMatches)
             .sort()
@@ -489,7 +256,7 @@ export default function Result({ tournamentId }: ResultProps) {
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center space-x-2 text-gray-500 mb-2 md:mb-0">
                           <Clock className="h-4 w-4" />
-                          <span>{match.time}</span>
+                          <span>{match.startTime} - {match.endTime}</span>
                           {match.venue && (
                             <>
                               <span className="mx-2">•</span>
@@ -558,7 +325,7 @@ export default function Result({ tournamentId }: ResultProps) {
         </div>
       )}
 
-      {!selectedMatch && format === "Single Elimination" && (
+      {!selectedMatch && tournament.format?.toString() === TournamentFormat.SingleElimination && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-xl font-bold text-gray-800 mb-6">Tournament Bracket</h3>
 
@@ -577,7 +344,7 @@ export default function Result({ tournamentId }: ResultProps) {
                     .map((match) => (
                       <div key={match.id} className="w-64 border border-gray-200 rounded-lg p-3">
                         <div className="text-xs text-gray-500 mb-2">
-                          {match.date.toLocaleDateString()} • {match.time}
+                          {match.date.toLocaleDateString()} • {match.startTime} - {match.endTime}
                         </div>
 
                         <div className="flex items-center justify-between mb-2">
@@ -614,7 +381,7 @@ export default function Result({ tournamentId }: ResultProps) {
                     .map((match) => (
                       <div key={match.id} className="w-64 border border-gray-200 rounded-lg p-3">
                         <div className="text-xs text-gray-500 mb-2">
-                          {match.date.toLocaleDateString()} • {match.time}
+                          {match.date.toLocaleDateString()} • {match.startTime} - {match.endTime}
                         </div>
 
                         <div className="flex items-center justify-between mb-2">
@@ -651,7 +418,7 @@ export default function Result({ tournamentId }: ResultProps) {
                     .map((match) => (
                       <div key={match.id} className="w-64 border border-gray-200 rounded-lg p-3">
                         <div className="text-xs text-gray-500 mb-2">
-                          {match.date.toLocaleDateString()} • {match.time}
+                          {match.date.toLocaleDateString()} • {match.startTime} - {match.endTime}
                         </div>
 
                         <div className="flex items-center justify-between mb-2">

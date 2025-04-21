@@ -81,8 +81,8 @@ function getStatusLabel(status: Tournament['status']) {
   let startDate = undefined, endDate = undefined;
   if (Array.isArray(item.eventDates) && item.eventDates.length > 0) {
     const dates = item.eventDates.map((d: any) => new Date(d.date));
-    startDate = new Date(Math.min(...dates.map(d => d.getTime())));
-    endDate = new Date(Math.max(...dates.map(d => d.getTime())));
+    startDate = new Date(Math.min(...dates.map((d: any) => d.getTime())));
+    endDate = new Date(Math.max(...dates.map((d: any) => d.getTime())));
   } else {
     startDate = endDate = new Date(item.createdAt);
   }
