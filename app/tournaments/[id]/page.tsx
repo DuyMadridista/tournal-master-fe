@@ -35,7 +35,7 @@ interface TournamentDetail {
 
 export default function TournamentOverview() {
   const params = useParams()
-  const tournamentId = params.id as string
+  const tournamentId = params?.id as string
   const [tournament, setTournament] = useState<TournamentDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { simulateFetch } = useDataFetching()
