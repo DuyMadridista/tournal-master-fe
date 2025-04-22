@@ -11,29 +11,10 @@ import EventDatesDisplay from "../components/tournament-details/EventDatesDispla
 import MatchDaysManager from "../components/tournament-details/MatchDaysManager"
 import { AlertTriangle, Info, Calendar, MapPin, Users, FileText } from "lucide-react"
 
-// Sample data for demonstration
-const sampleTournament: Tournament = {
-  id: "tour-1",
-  title: "Summer Football Championship 2023",
-  category: "Bóng đá",
-  format: "Group Stage",
-  location: "City Sports Complex",
-  description: "Annual summer football tournament for amateur teams.",
-  startDate: new Date("2023-06-15"),
-  endDate: new Date("2023-07-30"),
-  numberOfPlayers: 16,
-  groupStageSettings: {
-    numberOfGroups: 4,
-    teamsPerGroup: 4,
-    advancePerGroup: 2,
-  },
-}
+import { useEffect } from "react"
+import axios from "axios"
+// ...keep other imports
 
-const sampleOrganizers: Organizer[] = [
-  { id: "org-1", fullName: "John Smith", email: "john.smith@example.com", role: "Admin" },
-  { id: "org-2", fullName: "Maria Garcia", email: "maria.garcia@example.com", role: "Member" },
-  { id: "org-3", fullName: "David Lee", email: "david.lee@example.com", role: "Member" },
-]
 
 interface MatchDay {
   id: string
@@ -44,51 +25,141 @@ interface MatchDay {
 }
 
 export default function TournamentDetails() {
-  const [tournament, setTournament] = useState<Tournament>(sampleTournament)
-  const [organizers, setOrganizers] = useState<Organizer[]>(sampleOrganizers)
+  const [tournament, setTournament] = useState<Tournament | null>(null)
+  const [organizers, setOrganizers] = useState<Organizer[]>([])
   const [matchDays, setMatchDays] = useState<MatchDay[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
+  // For demo, use hardcoded id = 31. Replace with router param as needed.
+  useEffect(() => {
+    const fetchTournament = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get("http://localhost:6969/tournament/31");
+        const data = res.data.data;
+        // Map category (may be object)
+        const category = typeof data.category === "object" ? data.category.categoryName : data.category;
+        // Map organizers
+        const mappedOrganizers: Organizer[] = (data.organizers || []).map((o: any) => ({
+          id: String(o.id),
+          fullName: o.fullName,
+          email: o.email,
+          // role: not available in API, fallback to "Member"
+          role: o.role || "Member"
+        }));
+        setOrganizers(mappedOrganizers);
+        // Map match days from eventDates
+        const mappedMatchDays: MatchDay[] = (data.eventDates || []).map((ed: any) => ({
+          id: String(ed.id),
+          date: new Date(ed.date),
+          name: `Match Day ${ed.id}`,
+          isActive: true // No isActive in API, default to true
+        }));
+        setMatchDays(mappedMatchDays);
+        // Map tournament
+        setTournament({
+          id: String(data.id || ""),
+          title: data.title || "",
+          category: category || "",
+          format: data.format === "ROUND_ROBIN" ? "Round Robin" : (data.format || ""),
+          location: data.place || "",
+          description: data.description || "",
+          // Sort eventDates by date ascending
+          startDate: (() => {
+            if (data.eventDates && data.eventDates.length > 0) {
+              const sorted = [...data.eventDates].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+              return new Date(sorted[0].date);
+            }
+            return new Date();
+          })(),
+          endDate: (() => {
+            if (data.eventDates && data.eventDates.length > 0) {
+              const sorted = [...data.eventDates].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+              return new Date(sorted[sorted.length - 1].date);
+            }
+            return new Date();
+          })(),
+          numberOfPlayers: data.numberOfPlayers || 0,
+          groupStageSettings: data.numberOfGroups && data.teamsPerGroup && data.advancePerGroup ? {
+            numberOfGroups: data.numberOfGroups,
+            teamsPerGroup: data.teamsPerGroup,
+            advancePerGroup: data.advancePerGroup,
+          } : undefined,
+        });
+      } catch (err: any) {
+        setError("Failed to fetch tournament data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTournament();
+  }, []);
+
+  // Only update if tournament is not null and always provide all required fields
   const handleTournamentChange = (field: keyof Tournament, value: any) => {
-    setTournament({
-      ...tournament,
-      [field]: value,
-    })
+    setTournament(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [field]: value ?? "",
+        id: prev.id ?? "",
+        title: field === "title" ? value ?? "" : prev.title ?? "",
+        category: field === "category" ? value ?? "" : prev.category ?? "",
+        format: field === "format" ? value ?? "" : prev.format ?? "",
+        location: field === "location" ? value ?? "" : prev.location ?? "",
+        description: field === "description" ? value ?? "" : prev.description ?? "",
+        startDate: prev.startDate ?? new Date(),
+        endDate: prev.endDate ?? new Date(),
+        numberOfPlayers: prev.numberOfPlayers ?? 0,
+        groupStageSettings: prev.groupStageSettings,
+      }
+    });
   }
 
   const handleFormatChange = (format: TournamentFormat) => {
-    // Reset group stage settings if format is not Group Stage
-    if (format !== "Group Stage") {
-      setTournament({
-        ...tournament,
-        format,
-        groupStageSettings: undefined,
-      })
-    } else {
-      setTournament({
-        ...tournament,
-        format,
-        groupStageSettings: {
-          numberOfGroups: 4,
-          teamsPerGroup: 4,
-          advancePerGroup: 2,
-        },
-      })
-    }
+    setTournament(prev => {
+      if (!prev) return prev;
+      if (format !== "Group Stage") {
+        return {
+          ...prev,
+          format,
+          groupStageSettings: undefined,
+        };
+      } else {
+        return {
+          ...prev,
+          format,
+          groupStageSettings: {
+            numberOfGroups: 4,
+            teamsPerGroup: 4,
+            advancePerGroup: 2,
+          },
+        };
+      }
+    });
   }
 
   const handleGroupStageSettingsChange = (settings: GroupStageSettings) => {
-    setTournament({
-      ...tournament,
-      groupStageSettings: settings,
-    })
+    setTournament(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        groupStageSettings: settings,
+      };
+    });
   }
 
   const handleDatesChange = (startDate: Date, endDate: Date) => {
-    setTournament({
-      ...tournament,
-      startDate,
-      endDate,
-    })
+    setTournament(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        startDate,
+        endDate,
+      };
+    });
   }
 
   const handleMatchDaysChange = (updatedMatchDays: MatchDay[]) => {
@@ -100,15 +171,18 @@ export default function TournamentDetails() {
     alert("Tournament would be discarded after confirmation")
   }
 
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-[300px]">Loading tournament details...</div>;
+  }
+  if (error) {
+    return <div className="flex justify-center items-center min-h-[300px] text-red-600">{error}</div>;
+  }
+  if (!tournament) {
+    return <div className="flex justify-center items-center min-h-[300px] text-neutral-500">No tournament data found.</div>;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8 text-center max-w-3xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-4">Tournament Details</h1>
-        <p className="text-neutral-600">
-          Configure your tournament settings, format, and organizers. Make sure to save your changes.
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
@@ -188,35 +262,27 @@ export default function TournamentDetails() {
             </div>
           </InfoCard>
 
-          <InfoCard>
-            <div className="flex items-center mb-6 -mx-5 -mt-5 px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white">
-              <Calendar className="h-5 w-5 mr-2" />
-              <h3 className="font-semibold">Tournament Schedule</h3>
-            </div>
 
-            <EventDatesDisplay
-              startDate={tournament.startDate}
-              endDate={tournament.endDate}
-              onDatesChange={handleDatesChange}
-            />
-
-            <div className="mt-6 border-t border-neutral-200 pt-6">
-              <MatchDaysManager
-                startDate={tournament.startDate}
-                endDate={tournament.endDate}
-                onMatchDaysChange={handleMatchDaysChange}
-                initialMatchDays={matchDays}
-              />
-            </div>
-          </InfoCard>
 
           <OrganizersList organizers={organizers} onOrganizersChange={setOrganizers} />
+          <InfoCard isDanger title="Danger Zone">
+            <p className="text-red-600 mb-4">
+              This action cannot be undone. This will permanently delete the tournament and all associated data.
+            </p>
+            <button
+              onClick={handleDiscardTournament}
+              className="btn btn-md w-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center space-x-2"
+            >
+              <AlertTriangle className="h-5 w-5" />
+              <span>Discard Tournament</span>
+            </button>
+          </InfoCard>
         </div>
 
         {/* Right Column */}
         <div className="space-y-6">
           <InfoCard>
-            <div className="flex items-center mb-6 -mx-5 -mt-5 px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white">
+            <div className="flex items-center mb-6 -mx-5 -mt-5 px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl">
               <Calendar className="h-5 w-5 mr-2" />
               <h3 className="font-semibold">Tournament Overview</h3>
             </div>
@@ -291,19 +357,28 @@ export default function TournamentDetails() {
               )}
             </div>
           </InfoCard>
+          <InfoCard>
+            <div className="flex items-center mb-6 -mx-5 -mt-5 px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl">
+              <Calendar className="h-5 w-5 mr-2" />
+              <h3 className="font-semibold">Tournament Schedule</h3>
+            </div>
 
-          <InfoCard isDanger title="Danger Zone">
-            <p className="text-red-600 mb-4">
-              This action cannot be undone. This will permanently delete the tournament and all associated data.
-            </p>
-            <button
-              onClick={handleDiscardTournament}
-              className="btn btn-md w-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center space-x-2"
-            >
-              <AlertTriangle className="h-5 w-5" />
-              <span>Discard Tournament</span>
-            </button>
+            <EventDatesDisplay
+              startDate={tournament.startDate}
+              endDate={tournament.endDate}
+              onDatesChange={handleDatesChange}
+            />
+
+            <div className="mt-6 border-t border-neutral-200 pt-6">
+              <MatchDaysManager
+                startDate={tournament.startDate}
+                endDate={tournament.endDate}
+                onMatchDaysChange={handleMatchDaysChange}
+                initialMatchDays={matchDays}
+              />
+            </div>
           </InfoCard>
+          
         </div>
       </div>
     </div>

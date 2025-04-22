@@ -13,7 +13,7 @@ const sampleTeams: Team[] = [
   {
     id: "team-1",
     name: "FC Barcelona",
-    tier: "A",
+    tier: 1,
     group: "A",
     leaderName: "Carlos Rodriguez",
     leaderEmail: "carlos@example.com",
@@ -23,7 +23,7 @@ const sampleTeams: Team[] = [
   {
     id: "team-2",
     name: "Real Madrid",
-    tier: "A",
+    tier: 2,
     group: "B",
     leaderName: "Miguel Fernandez",
     leaderEmail: "miguel@example.com",
@@ -33,7 +33,7 @@ const sampleTeams: Team[] = [
   {
     id: "team-3",
     name: "Manchester United",
-    tier: "A",
+    tier: 3,
     group: "C",
     leaderName: "James Wilson",
     leaderEmail: "james@example.com",
@@ -43,7 +43,7 @@ const sampleTeams: Team[] = [
   {
     id: "team-4",
     name: "Bayern Munich",
-    tier: "A",
+    tier: 4,
     group: "D",
     leaderName: "Hans Mueller",
     leaderEmail: "hans@example.com",

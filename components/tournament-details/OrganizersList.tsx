@@ -49,7 +49,7 @@ export default function OrganizersList({ organizers, onOrganizersChange }: Organ
 
   return (
     <InfoCard>
-      <div className="flex items-center mb-6 -mx-5 -mt-5 px-5 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white">
+      <div className="flex items-center mb-6 -mx-5 -mt-5 px-5 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl">
         <Users className="h-5 w-5 mr-2" />
         <h3 className="font-semibold">Tournament Staff</h3>
       </div>

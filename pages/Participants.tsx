@@ -105,6 +105,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
       setTotalPages(Math.ceil(res.data.additionalData.totalTeamOfTournament / 10) || 1)
     } catch (err: any) {
       setError("Failed to load teams")
+      toast.error("Failed to load teams");
     } finally {
       setIsInitialLoading(false)
     }

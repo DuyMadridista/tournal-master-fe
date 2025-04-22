@@ -187,22 +187,10 @@ export default function MatchDaysManager({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-neutral-800">Match Days</h3>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setIsAddingNew(true)}
-            className="btn btn-sm bg-primary-600 text-white hover:bg-primary-700 flex items-center space-x-1"
-            disabled={isLoading || isAddingNew}
-          >
+        <div className="flex space-x-2 p-2">
+          <button onClick={() => setIsAddingNew(true)} className="btn btn-sm bg-green-600 text-white hover:bg-green-700 flex items-center space-x-1 p-2">
             <Plus className="h-4 w-4" />
             <span>Add Match Day</span>
-          </button>
-          <button
-            onClick={generateSuggestedMatchDays}
-            className="btn btn-sm btn-outline flex items-center space-x-1"
-            disabled={isLoading}
-          >
-            <Calendar className="h-4 w-4" />
-            <span>Generate</span>
           </button>
         </div>
       </div>
@@ -307,18 +295,6 @@ export default function MatchDaysManager({
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
                     className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider"
                   >
                     Actions
@@ -331,18 +307,6 @@ export default function MatchDaysManager({
                     <tr className={`hover:bg-neutral-50 ${!isDateWithinRange(day.date) ? "bg-amber-50" : ""}`}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
                         {formatDateShort(day.date)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">{day.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {day.isActive ? (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Active
-                          </span>
-                        ) : (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-neutral-100 text-neutral-800">
-                            Inactive
-                          </span>
-                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">

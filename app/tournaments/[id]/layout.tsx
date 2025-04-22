@@ -21,7 +21,7 @@ interface Tournament {
 export default function TournamentLayout({ children }: { children: React.ReactNode }) {
   const params = useParams()
   const pathname = usePathname()
-  const tournamentId = params.id as string
+  const tournamentId = params?.id as string
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { simulateFetch } = useDataFetching()
@@ -110,12 +110,12 @@ export default function TournamentLayout({ children }: { children: React.ReactNo
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-6">
+      <div >
         <Link href="/tournaments" className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-4">
           <ChevronLeft className="h-4 w-4 mr-1" />
-          <span>Quay lại danh sách giải đấu</span>
+          <span>Back to Tournament List</span>
         </Link>
-        <h1 className="text-3xl font-bold text-neutral-800 mb-2">{tournament.title}</h1>
+        {/* <h1 className="text-3xl font-bold text-neutral-800 mb-2">{tournament.title}</h1>
         <div className="flex items-center">
           <span className="text-neutral-600 mr-2">{tournament.category}</span>
           <span
@@ -133,7 +133,7 @@ export default function TournamentLayout({ children }: { children: React.ReactNo
                 ? "Sắp diễn ra"
                 : "Đã kết thúc"}
           </span>
-        </div>
+        </div> */}
       </div>
 
       {/* Navigation */}
@@ -161,7 +161,7 @@ export default function TournamentLayout({ children }: { children: React.ReactNo
       </div> */}
 
       {/* Content */}
-      <div className="bg-white rounded-xl shadow-card border border-neutral-200 p-6">{children}</div>
+      <div className="bg-white rounded-xl shadow-card border border-neutral-200 p-4">{children}</div>
     </div>
   )
 }
