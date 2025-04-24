@@ -5,8 +5,8 @@ export type TournamentFormat = "GROUP_STAGE" | "ROUND_ROBIN" | "SINGLE_ELIMINATI
 export interface Tournament {
   id: string
   title: string
-  category: string
-  organizer: Organizer[]
+  category: any
+  organizers: Organizer[]
   format: TournamentFormat
   location: string
   description: string

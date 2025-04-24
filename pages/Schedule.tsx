@@ -368,7 +368,7 @@ export default function Schedule() {
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center space-x-2 text-gray-500 mb-2 md:mb-0">
                           <Clock className="h-4 w-4" />
-                          <span>{match.time}</span>
+                          <span>{match.startTime} - {match.endTime}</span>
                           {match.venue && (
                             <>
                               <span className="mx-2">•</span>

@@ -144,7 +144,7 @@ function getStatusLabel(status: Tournament['status']) {
     if (window.confirm("Are you sure you want to delete this tournament?")) {
       try {
         // Simulate API call
-        await simulateFetch(null, 1000)
+        //await simulateFetch(null, 1000)
         setTournaments(tournaments.filter((tournament) => tournament.id !== id))
       } catch (error) {
         console.error("Failed to delete tournament:", error)

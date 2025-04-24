@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import type { Match, Team, Tournament } from "../types/tournament"
 import ActionToolbar from "../components/ui-elements/ActionToolbar"
 import { FileDown, Calendar, Clock, MapPin, Trophy, Eye } from "lucide-react"
@@ -11,6 +11,10 @@ import { getTournamentById } from "@/apis/api"
 import PDFResult from "../utils/pdfResult"
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import PDFDateResult from "../utils/PDFDateResult"
+import { Upload } from "@mui/icons-material"
+import { getLocalStorage } from "@/utils/localStorage"
+import { toast } from "react-toastify"
+const token = getLocalStorage('token');
 
 // API response types
 interface ApiMatch {
@@ -62,6 +66,43 @@ interface ResultProps {
 }
 
 export default function Result({ tournamentId }: ResultProps) {
+  // --- Update Result File Upload Logic ---
+  const fileInputRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
+
+  const handleUpdateResult = async (matchId: string) => {
+    const fileInput = fileInputRefs.current[matchId];
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+      alert('Please select a file to upload.');
+      return;
+    }
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await fetch(`http://localhost:6969/tournament/${tournamentId}/match/updateResult/${matchId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Failed to update result');
+      }
+      toast.success('Result updated successfully!');
+      loadData();
+    } catch (err: any) {
+      toast.error('Error updating result: ' + err.message);
+    }
+  };
+
+  const triggerFileInput = (matchId: string) => {
+    const input = fileInputRefs.current[matchId];
+    if (input) input.click();
+  };
+  // --- End Update Result File Upload Logic ---
   // Remove format state, use tournament?.format instead
   const [groupMatches, setGroupMatches] = useState<Match[]>([])
   const [knockoutMatches, setKnockoutMatches] = useState<Match[]>([])
@@ -70,6 +111,45 @@ export default function Result({ tournamentId }: ResultProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [tournament, setTournament]= useState<Tournament | null>(null)
   
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const tournament2= await getTournamentById(tournamentId)
+      setTournament(tournament2.data)
+      console.log("fshjsdhghi");
+      console.log(tournament);
+      
+      console.log(tournament2.data);
+      
+      const response = await fetch(`http://localhost:6969/tournament/${tournamentId}/match/result`);
+      const data: ApiMatchResponse = await response.json();
+      // Map API data to Match[]
+      const allMatches: Match[] = data.data.flatMap(group =>
+        group.matches.map(match => ({
+          id: match.id.toString(),
+          date: new Date(group.date),
+          startTime: match.startTime,
+          endTime: match.endTime,
+          team1: { id: match.teamOneId.toString(), name: match.teamOneName, leaderName: "", leaderEmail: "", phoneNumber: "", playerCount: 0 },
+          team2: { id: match.teamTwoId.toString(), name: match.teamTwoName, leaderName: "", leaderEmail: "", phoneNumber: "", playerCount: 0 },
+          venue: match.title || "",
+          round: undefined,
+          group: undefined,
+          completed: match.teamOneResult !== null && match.teamTwoResult !== null,
+          score1: match.teamOneResult ?? undefined,
+          score2: match.teamTwoResult ?? undefined,
+          events: [],
+          lineups: undefined,
+        }))
+      );
+      setGroupMatches(allMatches);
+      setKnockoutMatches([]); // If you have knockout data, map and set here
+    } catch (error) {
+      console.error("Failed to load match data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const getResultForPDF = () => {
     // Group matches by date (YYYY-MM-DD)
     const grouped: Record<string, any[]> = {};
@@ -90,46 +170,12 @@ export default function Result({ tournamentId }: ResultProps) {
   };
   // Load match data from API
   useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const tournament2= await getTournamentById(tournamentId)
-        setTournament(tournament2.data)
-        const response = await fetch(`http://localhost:6969/tournament/${tournamentId}/match/result`);
-        const data: ApiMatchResponse = await response.json();
-        console.log(data.data);
-        // Map API data to Match[]
-        const allMatches: Match[] = data.data.flatMap(group =>
-          group.matches.map(match => ({
-            id: match.id.toString(),
-            date: new Date(group.date),
-            startTime: match.startTime,
-            endTime: match.endTime,
-            team1: { id: match.teamOneId.toString(), name: match.teamOneName, leaderName: "", leaderEmail: "", phoneNumber: "", playerCount: 0 },
-            team2: { id: match.teamTwoId.toString(), name: match.teamTwoName, leaderName: "", leaderEmail: "", phoneNumber: "", playerCount: 0 },
-            venue: match.title || "",
-            round: undefined,
-            group: undefined,
-            completed: match.teamOneResult !== null && match.teamTwoResult !== null,
-            score1: match.teamOneResult ?? undefined,
-            score2: match.teamTwoResult ?? undefined,
-            events: [],
-            lineups: undefined,
-          }))
-        );
-        setGroupMatches(allMatches);
-        setKnockoutMatches([]); // If you have knockout data, map and set here
-      } catch (error) {
-        console.error("Failed to load match data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+
     loadData();
-  }, []);
+  }, [tournamentId]);
 
   const matches = tournament?.format?.toString() === TournamentFormat.SingleElimination ? knockoutMatches : groupMatches;
-
+  
   const filteredMatches = matches.filter(
     (match) =>
       match.team1.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -211,8 +257,8 @@ export default function Result({ tournamentId }: ResultProps) {
             <PDFResult
               result={getResultForPDF()}
               titleTournament={tournament?.title || ''}
-              category={tournament?.category || ''}
-              organizer={tournament?.organizer[0].fullName || ''}
+              category={tournament?.category?.categoryName || ''}
+              organizer={tournament?.organizers?.[0].fullName || ''}
             />
           }
           fileName={`${tournament?.title || 'tournament'}_Result.pdf`}
@@ -278,10 +324,24 @@ export default function Result({ tournamentId }: ResultProps) {
                           </span>
                         )}
                       </div>
-
                       <div className="mt-3 flex items-center justify-center">
-                        <div className="flex-1 text-right">
-                          <span className="text-lg font-medium">{match.team1.name}</span>
+                        <div className="flex-1 flex items-center justify-end">
+                          <input
+                            type="file"
+                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            style={{ display: 'none' }}
+                            ref={el => (fileInputRefs.current[match.id] = el)}
+                            onChange={() => handleUpdateResult(match.id)}
+                          />
+                          <button
+                            className="ml-4 btn btn-sm btn-outline flex items-center space-x-1"
+                            onClick={() => triggerFileInput(match.id)}
+                            type="button"
+                          >
+                            <Upload className="h-4 w-4" />
+                            <span>Update result</span>
+                          </button>
+                          <span className="text-lg font-medium ml-2">{match.team1.name}</span>
                         </div>
 
                         <div className="mx-4 flex items-center space-x-2">
@@ -291,7 +351,7 @@ export default function Result({ tournamentId }: ResultProps) {
                             value={match.score1 !== undefined ? match.score1 : ""}
                             onChange={(e) => handleScoreChange(match.id, "team1", Number.parseInt(e.target.value) || 0)}
                             className="w-12 h-10 text-center border border-gray-300 rounded-md"
-                            disabled={match.completed}
+                            disabled={true}
                           />
                           <span className="text-xl font-bold text-gray-500">-</span>
                           <input
@@ -300,7 +360,7 @@ export default function Result({ tournamentId }: ResultProps) {
                             value={match.score2 !== undefined ? match.score2 : ""}
                             onChange={(e) => handleScoreChange(match.id, "team2", Number.parseInt(e.target.value) || 0)}
                             className="w-12 h-10 text-center border border-gray-300 rounded-md"
-                            disabled={match.completed}
+                            disabled={true}
                           />
                         </div>
 

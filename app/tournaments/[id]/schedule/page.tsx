@@ -31,7 +31,7 @@ interface Match {
 
 export default function TournamentSchedulePage() {
   const params = useParams()
-  const tournamentId = params.id as string
+  const tournamentId = params?.id as string
   const [view, setView] = useState<"list" | "calendar" | "slot">("slot")
   const [matches, setMatches] = useState<Match[]>([])
   const [isLoading, setIsLoading] = useState(true)
