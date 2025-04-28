@@ -12,13 +12,13 @@ interface Match {
   date: Date
   startTime: string
   endTime: string
-  team1: {
-    id: string
-    name: string
+  teamOne: {
+    teamId: string
+    teamName: string
   }
-  team2: {
-    id: string
-    name: string
+  teamTwo: {
+    teamId: string
+    teamName: string
   }
   venue?: string
   round?: string
@@ -32,20 +32,20 @@ interface TimeSlot {
   date: Date
   startTime: string
   endTime: string
-  match: Match | null
-  isEmpty: boolean
+  matches: Match | null
+
 }
 
 interface SlotScheduleViewProps {
   matches: Match[]
-  onUpdateMatch: (matchId: string, updates: Partial<Match>) => Promise<void>
+  onUpdateMatch: (matchId: string, slotID:string ) => Promise<void>
   dateFilter: "all" | string
+  eventDates: any[]
 }
 
-export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }: SlotScheduleViewProps) {
+export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, eventDates }: SlotScheduleViewProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [timeSlots, setTimeSlots] = useState<Record<string, TimeSlot[]>>({})
   const [planSettings, setPlanSettings] = useState({
     matchDuration: 60,
     timeBetweenMatches: 10,
@@ -53,6 +53,8 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }:
     endTime: "18:00",
   })
 
+  
+  
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -62,104 +64,38 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }:
   )
 
   const activeMatch = matches.find((match) => match.id === activeId) || null
-
-  // Generate time slots for each date and assign matches to slots
-  useEffect(() => {
-    // Group dates from matches
-    const uniqueDates = Array.from(new Set(matches.map((match) => match.date.toISOString().split("T")[0]))).sort()
-
-    // Define standard time slots for each day
-    const standardTimeSlots = [
-      { start: "08:00", end: "09:00" },
-      { start: "09:10", end: "10:10" },
-      { start: "10:20", end: "11:20" },
-      { start: "14:00", end: "15:00" },
-      { start: "16:00", end: "17:00" },
-      { start: "18:00", end: "19:00" },
-    ]
-
-    // Create slots for each date
-    const slots: Record<string, TimeSlot[]> = {}
-
-    uniqueDates.forEach((dateStr) => {
-      const date = new Date(dateStr)
-      const slotsForDate: TimeSlot[] = []
-
-      // Create standard slots for this date
-      standardTimeSlots.forEach((timeSlot, index) => {
-        slotsForDate.push({
-          id: `slot-${dateStr}-${timeSlot.start}`,
-          date,
-          startTime: timeSlot.start,
-          endTime: timeSlot.end,
-          match: null,
-          isEmpty: true,
-        })
-      })
-
-      // Assign matches to slots
-      matches.forEach((match) => {
-        const matchDateStr = match.date.toISOString().split("T")[0]
-        if (matchDateStr === dateStr) {
-          // Find the slot with matching start time
-          const slotIndex = slotsForDate.findIndex((slot) => slot.startTime === match.startTime)
-          if (slotIndex !== -1) {
-            slotsForDate[slotIndex].match = match
-            slotsForDate[slotIndex].isEmpty = false
-          }
-        }
-      })
-
-      slots[dateStr] = slotsForDate
-    })
-
-    setTimeSlots(slots)
-  }, [matches])
-
-  // Add a visual indicator when dragging to show where the match can be dropped
   const handleDragStart = (event: any) => {
-    setActiveId(event.active.id)
+    setActiveId(event.active.id.toString())
     setIsDragging(true)
-
-    // Add a subtle animation to all drop areas to indicate they can receive the match
     document.querySelectorAll('[data-droppable="true"]').forEach((el) => {
       el.classList.add("pulse-animation")
     })
   }
-
-  // Thay đổi hàm handleDragEnd để đảm bảo cập nhật đúng cách
   const handleDragEnd = async (event: any) => {
+    console.log("Drag End Event", event);
     setIsDragging(false)
     setActiveId(null)
-
+    
     // Remove the animation from all drop areas
     document.querySelectorAll('[data-droppable="true"]').forEach((el) => {
       el.classList.remove("pulse-animation")
     })
 
     const { active, over } = event
-
+    console.log(over, active.id, over.id);
+    
     if (over && active.id !== over.id) {
-      const match = matches.find((m) => m.id === active.id)
+      console.log("shjadsj");
+      
+      const match = matches.find((m) => m.id.toString() === active.id.toString())
       if (!match) return;
+;
+      const slot = eventDates.flatMap(e => e.slots).find(s => s.id === over.id) || null;
 
-      // slotId format: slot-YYYY-MM-DD-HH:MM
-      const regex = /^slot-(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2})$/;
-      const matchResult = over.id.match(regex);
-      if (!matchResult) return;
-      const slotDate = matchResult[1];
-      const slotStartTime = matchResult[2];
-
-      const slots = timeSlots[slotDate] || [];
-      const targetSlot = slots.find((slot) => slot.startTime === slotStartTime);
       // Only allow drop if slot is empty
-      if (targetSlot && targetSlot.isEmpty) {
+      if (slot && !slot.matches) {
         try {
-          await onUpdateMatch(match.id, {
-            date: new Date(slotDate),
-            startTime: targetSlot.startTime,
-            endTime: targetSlot.endTime,
-          });
+          await onUpdateMatch(match.id, slot.id)
         } catch (error) {
           console.error("Failed to update match date:", error);
         }
@@ -176,15 +112,16 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }:
       [setting]: value,
     }))
   }
-
+  console.log(eventDates);
+  
   const handleGenerateSchedule = () => {
     alert("Schedule generation would be implemented here")
   }
 
-  // Filter dates based on dateFilter
-  const filteredDates = Object.keys(timeSlots)
-    .filter((date) => dateFilter === "all" || date === dateFilter)
-    .sort()
+  // Filter eventDates based on dateFilter
+  const filteredEventDates = eventDates
+    .filter((ed) => dateFilter === "all" || ed.date === dateFilter)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
@@ -196,16 +133,16 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }:
         modifiers={[restrictToWindowEdges]}
       >
         <div className="flex-1 space-y-8">
-          {filteredDates.length === 0 ? (
+          {filteredEventDates.length === 0 ? (
             <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8 text-center">
               <p className="text-neutral-600">No matches scheduled.</p>
             </div>
           ) : (
-            filteredDates.map((dateStr) => (
-              <div key={dateStr} className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
+            filteredEventDates.map((eventDate) => (
+              <div key={eventDate.date} className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
                 <div className="bg-blue-200 px-6 py-3">
                   <h3 className="text-lg font-semibold">
-                    {new Date(dateStr).toLocaleDateString("en-US", {
+                    {new Date(eventDate.date).toLocaleDateString("en-US", {
                       weekday: "long",
                       year: "numeric",
                       month: "long",
@@ -215,7 +152,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }:
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                  {timeSlots[dateStr].map((slot) => (
+                  {eventDate.slots?.map((slot: any) => (
                     <SlotDropArea key={slot.id} slot={slot} />
                   ))}
                 </div>
@@ -252,7 +189,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }:
 
               <div className="flex items-center justify-center">
                 <div className="flex-1 text-right">
-                  <span className="text-lg font-medium">{activeMatch.team1.name}</span>
+                  <span className="text-lg font-medium">{activeMatch.teamOne.teamName}</span>
                 </div>
 
                 <div className="mx-4 text-center">
@@ -260,7 +197,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter }:
                 </div>
 
                 <div className="flex-1">
-                  <span className="text-lg font-medium">{activeMatch.team2.name}</span>
+                  <span className="text-lg font-medium">{activeMatch.teamTwo.teamName}</span>
                 </div>
               </div>
             </div>
@@ -358,7 +295,13 @@ function DraggableMatch({ match }: { match: Match }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: match.id,
     data: { match },
-  })
+  });
+
+  // Safely handle missing team1/team2
+  const team1Id = match.teamOne?.teamId ? (match.teamOne.teamId) : "";
+  const team2Id = match.teamTwo?.teamId ? (match.teamTwo.teamId) : "";
+  const team1Name = match.teamOne?.teamName || "";
+  const team2Name = match.teamTwo?.teamName || "";
 
   return (
     <div
@@ -375,11 +318,11 @@ function DraggableMatch({ match }: { match: Match }) {
       }}
     >
       <div className="flex justify-between items-center mb-2">
-        <div className="text-sm font-medium">#{match.team1.id.split("-")[1]}</div>
+        <div className="text-sm font-medium">{team1Name}</div>
         <div className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">Home</div>
       </div>
       <div className="flex justify-between items-center">
-        <div className="text-sm font-medium">#{match.team2.id.split("-")[1]}</div>
+        <div className="text-sm font-medium">{team2Name}</div>
         <div className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded">Away</div>
       </div>
 
@@ -390,7 +333,7 @@ function DraggableMatch({ match }: { match: Match }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // Component for a slot that can receive matches
@@ -406,7 +349,7 @@ function SlotDropArea({ slot }: { slot: TimeSlot }) {
       className={`p-3 rounded-lg ${
         isOver
           ? "border-2 border-primary-400 bg-primary-50"
-          : slot.isEmpty
+          : slot.matches===null
             ? "border-2 border-dashed border-gray-300 bg-gray-50"
             : "border border-gray-200 bg-white"
       } min-h-[120px] transition-colors duration-200`}
@@ -415,7 +358,7 @@ function SlotDropArea({ slot }: { slot: TimeSlot }) {
         {slot.startTime} - {slot.endTime}
       </div>
 
-      {slot.isEmpty ? (
+      {slot.matches ===null ? (
         <div className="h-full flex flex-col items-center justify-center text-sm text-gray-500 py-4">
           <p>
             Slot {slot.startTime.split(":")[0]} • {slot.startTime}
@@ -423,7 +366,7 @@ function SlotDropArea({ slot }: { slot: TimeSlot }) {
           <p className="text-gray-400 mt-1">Drop match here</p>
         </div>
       ) : (
-        <div>{slot.match && <DraggableMatch match={slot.match} />}</div>
+        <div>{slot.matches && <DraggableMatch match={slot.matches} />}</div>
       )}
     </div>
   )

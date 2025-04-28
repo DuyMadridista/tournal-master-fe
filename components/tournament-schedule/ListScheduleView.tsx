@@ -8,13 +8,13 @@ interface Match {
   date: Date
   startTime: string
   endTime: string
-  team1: {
-    id: string
-    name: string
+  teamOne: {
+    teamId: string
+    teamName: string
   }
-  team2: {
-    id: string
-    name: string
+  teamTwo: {
+    teamId: string
+    teamName: string
   }
   venue?: string
   round?: string
@@ -22,10 +22,9 @@ interface Match {
   completed: boolean
   matchDayId?: string
 }
-
 interface ListScheduleViewProps {
   matches: Match[]
-  onUpdateMatch: (matchId: string, updates: Partial<Match>) => Promise<void>
+  onUpdateMatch: (matchId: string, slotId: string) => Promise<void>
 }
 
 export default function ListScheduleView({ matches, onUpdateMatch }: ListScheduleViewProps) {
@@ -62,8 +61,8 @@ export default function ListScheduleView({ matches, onUpdateMatch }: ListSchedul
     setExpandedMatch(expandedMatch === matchId ? null : matchId)
   }
 
-  const handleMarkCompleted = async (matchId: string, completed: boolean) => {
-    await onUpdateMatch(matchId, { completed })
+  const handleMarkCompleted = async (matchId: string, slotId: string) => {
+    await onUpdateMatch(matchId, slotId)
   }
 
   return (
@@ -139,8 +138,8 @@ export default function ListScheduleView({ matches, onUpdateMatch }: ListSchedul
               >
                 <td className="px-4 py-3">
                   <div className="flex flex-col">
-                    <span className="font-medium">{match.team1.name}</span>
-                    <span className="font-medium">{match.team2.name}</span>
+                    <span className="font-medium">{match.teamOne.teamName}</span>
+                    <span className="font-medium">{match.teamTwo.teamName}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3">

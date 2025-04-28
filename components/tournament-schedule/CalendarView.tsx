@@ -8,13 +8,13 @@ interface Match {
   date: Date
   startTime: string
   endTime: string
-  team1: {
-    id: string
-    name: string
+  teamOne: {
+    teamId: string
+    teamName: string
   }
-  team2: {
-    id: string
-    name: string
+  teamTwo: {
+    teamId: string
+    teamName: string
   }
   venue?: string
   round?: string
@@ -26,7 +26,7 @@ interface Match {
 interface CalendarViewProps {
   matches: Match[]
   currentMonth: Date
-  onUpdateMatch: (matchId: string, updates: Partial<Match>) => Promise<void>
+  onUpdateMatch: (matchId: string, updates: string) => Promise<void>
 }
 
 export default function CalendarView({ matches, currentMonth, onUpdateMatch }: CalendarViewProps) {
@@ -126,7 +126,7 @@ export default function CalendarView({ matches, currentMonth, onUpdateMatch }: C
                       <span>{match.startTime}</span>
                     </div>
                     <div className="font-medium">
-                      {match.team1.name} vs {match.team2.name}
+                      {match.teamOne.teamName} vs {match.teamTwo.teamName}
                     </div>
                     {match.venue && (
                       <div className="flex items-center text-neutral-500 mt-1">

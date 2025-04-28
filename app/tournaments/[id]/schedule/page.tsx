@@ -8,19 +8,21 @@ import LoadingSpinner from "../../../../components/ui-elements/LoadingSpinner"
 import CalendarView from "../../../../components/tournament-schedule/CalendarView"
 import ListScheduleView from "../../../../components/tournament-schedule/ListScheduleView"
 import SlotScheduleView from "@/components/tournament-schedule/SlotScheduleView"
+import axios from "axios"
+import { toast } from "react-toastify"
 
 interface Match {
   id: string
   date: Date
   startTime: string
   endTime: string
-  team1: {
-    id: string
-    name: string
+  teamOne: {
+    teamId: string
+    teamName: string
   }
-  team2: {
-    id: string
-    name: string
+  teamTwo: {
+    teamId: string
+    teamName: string
   }
   venue?: string
   round?: string
@@ -34,6 +36,7 @@ export default function TournamentSchedulePage() {
   const tournamentId = params?.id as string
   const [view, setView] = useState<"list" | "calendar" | "slot">("slot")
   const [matches, setMatches] = useState<Match[]>([])
+  const [eventDates, setEventDates] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [dateFilter, setDateFilter] = useState<"all" | string>("all")
@@ -41,78 +44,46 @@ export default function TournamentSchedulePage() {
 
   useEffect(() => {
     const loadMatches = async () => {
+      setIsLoading(true)
       try {
-        // Sample data with specific times for slots
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(today.getDate() + 1)
-        const dayAfterTomorrow = new Date(today)
-        dayAfterTomorrow.setDate(today.getDate() + 2)
+        const res = await axios.get(`http://localhost:6969/generate/${tournamentId}`)
+        const apiData = res.data?.data || []
+        setEventDates(apiData)
 
-        // Create sample dates
-        const dates = [today, tomorrow, dayAfterTomorrow]
-
-        // Create sample time slots
-        const timeSlots = [
-          { start: "08:00", end: "09:00" },
-          { start: "09:10", end: "10:10" },
-          { start: "10:20", end: "11:20" },
-          { start: "14:00", end: "15:00" },
-          { start: "16:00", end: "17:00" },
-          { start: "18:00", end: "19:00" },
-        ]
-
-        // Create teams
-        const teams = [
-          { id: "team-1", name: "FC Barcelona" },
-          { id: "team-2", name: "Real Madrid" },
-          { id: "team-3", name: "Manchester United" },
-          { id: "team-4", name: "Bayern Munich" },
-          { id: "team-5", name: "Liverpool" },
-          { id: "team-6", name: "PSG" },
-          { id: "team-7", name: "Juventus" },
-          { id: "team-8", name: "AC Milan" },
-        ]
-
-        // Generate matches for each date
-        const sampleMatches: Match[] = []
-
-        // Create some matches with assigned slots
-        dates.forEach((date, dateIndex) => {
-          // Only fill some slots to leave empty ones for dragging
-          const filledSlots = dateIndex === 0 ? [0, 1, 2] : dateIndex === 1 ? [0, 3] : [1, 2]
-
-          filledSlots.forEach((slotIndex) => {
-            const timeSlot = timeSlots[slotIndex]
-            const team1Index = (dateIndex + slotIndex) % teams.length
-            const team2Index = (dateIndex + slotIndex + 4) % teams.length
-
-            sampleMatches.push({
-              id: `match-${dateIndex}-${slotIndex}`,
-              date: new Date(date),
-              startTime: timeSlot.start,
-              endTime: timeSlot.end,
-              team1: teams[team1Index],
-              team2: teams[team2Index],
-              venue: `Field ${String.fromCharCode(65 + (slotIndex % 3))}`,
-              round: `Round ${Math.floor((dateIndex * timeSlots.length + slotIndex) / 8) + 1}`,
-              group: String.fromCharCode(65 + (slotIndex % 4)),
-              completed: dateIndex === 0 && slotIndex < 2,
-              matchDayId: `md-${dateIndex + 1}`,
-            })
+        // Map API response về dạng Match[]
+        const matches: Match[] = []
+        apiData.forEach((eventDate: any) => {
+          eventDate.slots.forEach((slot: any) => {
+            if (slot.matches) {
+              matches.push({
+                id: String(slot.matches.id),
+                date: new Date(eventDate.date),
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+                teamOne: {
+                  teamId: String(slot.matches.teamOne.teamId),
+                  teamName: slot.matches.teamOne.teamName,
+                },
+                teamTwo: {
+                  teamId: String(slot.matches.teamTwo.teamId),
+                  teamName: slot.matches.teamTwo.teamName,
+                },
+                venue: undefined, // API chưa có trường venue
+                round: undefined, // API chưa có trường round
+                group: slot.matches.group ?? undefined,
+                completed: false, // API chưa có trường completed
+                matchDayId: String(eventDate.eventDateId),
+              })
+            }
           })
         })
-
-        // Simulate API call
-        const data = await simulateFetch(sampleMatches, 1500)
-        setMatches(data)
+        setMatches(matches)
       } catch (error) {
         console.error("Failed to load matches:", error)
       } finally {
         setIsLoading(false)
       }
     }
-
     loadMatches()
   }, [tournamentId])
 
@@ -127,16 +98,32 @@ export default function TournamentSchedulePage() {
   }
 
   // Cập nhật hàm handleUpdateMatch để đảm bảo cập nhật state đúng cách
-  const handleUpdateMatch = async (matchId: string, updates: Partial<Match>) => {
+  const handleUpdateMatch = async (matchId: string, slotId: string) => {
     try {
-      // Cập nhật state trước khi gọi API để UI phản ánh ngay lập tức
-      setMatches((prevMatches) =>
-        prevMatches.map((match) => (match.id === matchId ? { ...match, ...updates } : match))
-      );
-      // Gọi API giả lập, KHÔNG setMatches lại sau khi await
-      await simulateFetch(null, 1000);
+      console.log("slotID",slotId);
+      const match = matches.find((m) => m.id === matchId);
 
-      // Không cần cập nhật state lần nữa vì đã cập nhật ở trên
+      if (match) {
+        setEventDates((prevEventDates) =>
+          prevEventDates.map((eventDate) => ({
+            ...eventDate,
+            slots: eventDate.slots.map((slot: any) => { 
+              if (slot.matches?.id == matchId) {
+                return { ...slot, matches: null };
+              }
+              if (slot.id ==slotId) {
+                return { ...slot, matches: match };
+              }
+              return slot;
+            }),
+          }))
+        );
+      }
+
+      // Gọi API giả lập, KHÔNG setMatches lại sau khi await
+     // await simulateFetch(null, 1000);
+
+     toast.success("Match updated successfully!")
     } catch (error) {
       console.error("Failed to update match:", error)
       // Nếu có lỗi, có thể cần phục hồi state về trạng thái trước đó
@@ -265,7 +252,12 @@ export default function TournamentSchedulePage() {
       ) : view === "calendar" ? (
         <CalendarView matches={matches} currentMonth={currentMonth} onUpdateMatch={handleUpdateMatch} />
       ) : (
-        <SlotScheduleView matches={matches} onUpdateMatch={handleUpdateMatch} dateFilter={dateFilter} />
+        <SlotScheduleView
+          matches={matches}
+          onUpdateMatch={handleUpdateMatch}
+          dateFilter={dateFilter}
+          eventDates={eventDates}
+        />
       )}
     </div>
   )
