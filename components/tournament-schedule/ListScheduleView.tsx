@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { Clock, MapPin, Calendar, ChevronDown, ChevronUp } from "lucide-react"
+import { Tournament } from "@/types/tournament"
+
 
 interface Match {
   id: string
@@ -25,9 +27,12 @@ interface Match {
 interface ListScheduleViewProps {
   matches: Match[]
   onUpdateMatch: (matchId: string, slotId: string) => Promise<void>
+  tournament: Tournament | null
 }
 
-export default function ListScheduleView({ matches, onUpdateMatch }: ListScheduleViewProps) {
+export default function ListScheduleView({ matches, onUpdateMatch, tournament }: ListScheduleViewProps) {
+  console.log(tournament);
+
   const [sortField, setSortField] = useState<"date" | "group" | "round">("date")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null)
@@ -71,13 +76,12 @@ export default function ListScheduleView({ matches, onUpdateMatch }: ListSchedul
         <table className="w-full">
           <thead>
             <tr className="bg-neutral-100 border-b border-neutral-200">
-              <th className="px-4 py-3 text-left font-medium text-neutral-600">Teams</th>
               <th
                 className="px-4 py-3 text-left font-medium text-neutral-600 cursor-pointer"
                 onClick={() => toggleSort("date")}
               >
                 <div className="flex items-center">
-                  <span>Date & Time</span>
+                  <span>Match Date</span>
                   {sortField === "date" && (
                     <span className="ml-1">
                       {sortDirection === "asc" ? (
@@ -89,29 +93,13 @@ export default function ListScheduleView({ matches, onUpdateMatch }: ListSchedul
                   )}
                 </div>
               </th>
-              <th
-                className="px-4 py-3 text-left font-medium text-neutral-600 cursor-pointer"
-                onClick={() => toggleSort("group")}
-              >
-                <div className="flex items-center">
-                  <span>Group</span>
-                  {sortField === "group" && (
-                    <span className="ml-1">
-                      {sortDirection === "asc" ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </span>
-                  )}
-                </div>
-              </th>
+              <th className="px-4 py-3 text-left font-medium text-neutral-600">Teams</th>
               <th
                 className="px-4 py-3 text-left font-medium text-neutral-600 cursor-pointer"
                 onClick={() => toggleSort("round")}
               >
                 <div className="flex items-center">
-                  <span>Round</span>
+                  <span>Match Time</span>
                   {sortField === "round" && (
                     <span className="ml-1">
                       {sortDirection === "asc" ? (
@@ -122,26 +110,38 @@ export default function ListScheduleView({ matches, onUpdateMatch }: ListSchedul
                     </span>
                   )}
                 </div>
-              </th>
+              </th>{
+                (tournament?.format === "GROUP_STAGE") && (
+                  <th
+                    className="px-4 py-3 text-left font-medium text-neutral-600 cursor-pointer"
+                    onClick={() => toggleSort("group")}
+                  >
+                    <div className="flex items-center">
+                      <span>Group</span>
+                      {sortField === "group" && (
+                        <span className="ml-1">
+                          {sortDirection === "asc" ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                )
+              }
               <th className="px-4 py-3 text-left font-medium text-neutral-600">Venue</th>
               <th className="px-4 py-3 text-left font-medium text-neutral-600">Status</th>
-              <th className="px-4 py-3 text-right font-medium text-neutral-600">Actions</th>
             </tr>
           </thead>
           <tbody>
             {sortedMatches.map((match) => (
               <tr
                 key={match.id}
-                className={`border-b border-neutral-200 hover:bg-neutral-50 ${
-                  expandedMatch === match.id ? "bg-neutral-50" : ""
-                }`}
+                className={`border-b border-neutral-200 hover:bg-neutral-50 ${expandedMatch === match.id ? "bg-neutral-50" : ""
+                  }`}
               >
-                <td className="px-4 py-3">
-                  <div className="flex flex-col">
-                    <span className="font-medium">{match.teamOne.teamName}</span>
-                    <span className="font-medium">{match.teamTwo.teamName}</span>
-                  </div>
-                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-neutral-500" />
@@ -154,28 +154,37 @@ export default function ListScheduleView({ matches, onUpdateMatch }: ListSchedul
                           day: "numeric",
                         })}
                       </div>
-                      <div className="text-neutral-500 text-sm flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {match.startTime} - {match.endTime}
-                      </div>
+
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  {match.group && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                      Group {match.group}
-                    </span>
-                  )}
+                  <div className="flex flex-row">
+                    <span className="font-medium">{match.teamOne.teamName}</span>
+                    <span className="font-medium px-2 text-primary-500">vs</span>
+                    <span className="font-medium">{match.teamTwo.teamName}</span>
+                  </div>
                 </td>
-                <td className="px-4 py-3">{match.round}</td>
+                
+
+                <td className="px-4 py-3"> <div className="text-neutral-500 text-sm flex items-center">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {match.startTime} - {match.endTime}
+                </div></td>
+                {tournament?.format === "GROUP_STAGE" &&
+                  (<td className="px-4 py-3">
+                    {match.group && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        Group {match.group}
+                      </span>
+                    )}
+                  </td>)}
                 <td className="px-4 py-3">
-                  {match.venue && (
-                    <div className="flex items-center text-neutral-600">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {match.venue}
-                    </div>
-                  )}
+
+                  <div className="flex items-center text-neutral-600">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    {tournament?.place}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   {match.completed ? (
@@ -184,24 +193,9 @@ export default function ListScheduleView({ matches, onUpdateMatch }: ListSchedul
                     </span>
                   ) : (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                      Scheduled
+                      Upcoming
                     </span>
                   )}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => toggleMatchExpanded(match.id)}
-                      className="p-1 rounded-md hover:bg-neutral-200"
-                      aria-label="Toggle details"
-                    >
-                      {expandedMatch === match.id ? (
-                        <ChevronUp className="h-5 w-5 text-neutral-600" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-neutral-600" />
-                      )}
-                    </button>
-                  </div>
                 </td>
               </tr>
             ))}

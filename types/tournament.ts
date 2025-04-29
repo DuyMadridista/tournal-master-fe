@@ -8,7 +8,9 @@ export interface Tournament {
   category: any
   organizers: Organizer[]
   format: TournamentFormat
+  status: "READY" | "IN_PROGRESS" | "FINISHED" | "DISCARDED"
   location: string
+  place: string
   description: string
   startDate: Date
   endDate: Date

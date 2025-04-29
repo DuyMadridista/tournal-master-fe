@@ -114,16 +114,11 @@ export default function Result({ tournamentId }: ResultProps) {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const tournament2= await getTournamentById(tournamentId)
-      setTournament(tournament2.data)
-      console.log("fshjsdhghi");
-      console.log(tournament);
-      
-      console.log(tournament2.data);
+      const tournament= await getTournamentById(tournamentId)
+      setTournament(tournament.data)
       
       const response = await fetch(`http://localhost:6969/tournament/${tournamentId}/match/result`);
       const data: ApiMatchResponse = await response.json();
-      // Map API data to Match[]
       const allMatches: Match[] = data.data.flatMap(group =>
         group.matches.map(match => ({
           id: match.id.toString(),
@@ -143,7 +138,7 @@ export default function Result({ tournamentId }: ResultProps) {
         }))
       );
       setGroupMatches(allMatches);
-      setKnockoutMatches([]); // If you have knockout data, map and set here
+      setKnockoutMatches([]); 
     } catch (error) {
       console.error("Failed to load match data:", error);
     } finally {

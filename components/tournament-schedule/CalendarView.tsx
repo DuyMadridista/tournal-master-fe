@@ -49,7 +49,7 @@ export default function CalendarView({ matches, currentMonth, onUpdateMatch }: C
   // Create calendar grid
   const days = []
   for (let i = 0; i < firstDayOfMonth; i++) {
-    days.push(null) // Empty cells for days before the 1st of the month
+    days.push(null) 
   }
   for (let i = 1; i <= daysInMonth; i++) {
     days.push(new Date(year, month, i))
@@ -58,13 +58,14 @@ export default function CalendarView({ matches, currentMonth, onUpdateMatch }: C
   // Group matches by date
   const matchesByDate: Record<string, Match[]> = {}
   matches.forEach((match) => {
-    const dateStr = match.date.toISOString().split("T")[0]
+    const dateStr = match.date.toLocaleDateString().split("T")[0]
+    console.log(dateStr)
     if (!matchesByDate[dateStr]) {
       matchesByDate[dateStr] = []
     }
     matchesByDate[dateStr].push(match)
   })
-
+  console.log(matchesByDate)
   const handleDateClick = (date: Date) => {
     setSelectedDate(date)
   }
@@ -83,7 +84,7 @@ export default function CalendarView({ matches, currentMonth, onUpdateMatch }: C
             return <div key={`empty-${index}`} className="bg-white p-2 min-h-[100px]" />
           }
 
-          const dateStr = day.toISOString().split("T")[0]
+          const dateStr = day.toLocaleDateString().split("T")[0]
           const dayMatches = matchesByDate[dateStr] || []
           const isToday =
             day.getDate() === new Date().getDate() &&
@@ -123,10 +124,10 @@ export default function CalendarView({ matches, currentMonth, onUpdateMatch }: C
                   >
                     <div className="flex items-center text-neutral-500 mb-1">
                       <Clock className="h-3 w-3 mr-1" />
-                      <span>{match.startTime}</span>
+                      <span>{match.startTime} - {match.endTime}</span>
                     </div>
-                    <div className="font-medium">
-                      {match.teamOne.teamName} vs {match.teamTwo.teamName}
+                    <div className="font-semibold text-center">
+                      {match.teamOne.teamName} <span className="text-primary-500 px-1">vs</span> {match.teamTwo.teamName}
                     </div>
                     {match.venue && (
                       <div className="flex items-center text-neutral-500 mt-1">

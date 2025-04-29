@@ -10,6 +10,8 @@ import ListScheduleView from "../../../../components/tournament-schedule/ListSch
 import SlotScheduleView from "@/components/tournament-schedule/SlotScheduleView"
 import axios from "axios"
 import { toast } from "react-toastify"
+import api, { getTournamentById } from "@/apis/api"
+import { Tournament } from "@/types/tournament"
 
 interface Match {
   id: string
@@ -34,6 +36,7 @@ interface Match {
 export default function TournamentSchedulePage() {
   const params = useParams()
   const tournamentId = params?.id as string
+  const [tournament, setTournament] = useState<Tournament | null>(null)
   const [view, setView] = useState<"list" | "calendar" | "slot">("slot")
   const [matches, setMatches] = useState<Match[]>([])
   const [eventDates, setEventDates] = useState<any[]>([])
@@ -42,17 +45,32 @@ export default function TournamentSchedulePage() {
   const [dateFilter, setDateFilter] = useState<"all" | string>("all")
   const { simulateFetch } = useDataFetching()
 
+  const loadMatches = async () => {
+    setIsLoading(true)
+    try {
+      const res = await api.get(`/generate/${tournamentId}`)
+      const apiData = res.data?.data || []
+      setEventDates(apiData)
+      mapEventDatesToMatches(apiData)
+    } catch (error) {
+      toast.error("Failed to load matches")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  const handleAfterGenerate = () => {
+    loadMatches()
+  }
   useEffect(() => {
-    const loadMatches = async () => {
-      setIsLoading(true)
-      try {
-        const res = await axios.get(`http://localhost:6969/generate/${tournamentId}`)
-        const apiData = res.data?.data || []
-        setEventDates(apiData)
+    getTournamentById(tournamentId).then((res) => {
+      setTournament(res.data)
+    })
+    loadMatches()
+  }, [tournamentId])
 
-        // Map API response về dạng Match[]
-        const matches: Match[] = []
-        apiData.forEach((eventDate: any) => {
+  const mapEventDatesToMatches = (eventDates: any) => {
+    const matches: Match[] = []
+    eventDates.forEach((eventDate: any) => {
           eventDate.slots.forEach((slot: any) => {
             if (slot.matches) {
               matches.push({
@@ -68,65 +86,46 @@ export default function TournamentSchedulePage() {
                   teamId: String(slot.matches.teamTwo.teamId),
                   teamName: slot.matches.teamTwo.teamName,
                 },
-                venue: undefined, // API chưa có trường venue
-                round: undefined, // API chưa có trường round
+                venue: tournament?.place ?? "", 
+                round: undefined, 
                 group: slot.matches.group ?? undefined,
-                completed: false, // API chưa có trường completed
+                completed: new Date() > new Date(eventDate.date), 
                 matchDayId: String(eventDate.eventDateId),
               })
             }
           })
         })
-        setMatches(matches)
-      } catch (error) {
-        console.error("Failed to load matches:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadMatches()
-  }, [tournamentId])
-
-  const handleExportSchedule = async () => {
-    try {
-      // Simulate API call
-      await simulateFetch(null, 1000)
-      alert("Schedule exported successfully!")
-    } catch (error) {
-      console.error("Failed to export schedule:", error)
-    }
+    setMatches(matches)
   }
 
-  // Cập nhật hàm handleUpdateMatch để đảm bảo cập nhật state đúng cách
   const handleUpdateMatch = async (matchId: string, slotId: string) => {
+    const backup = JSON.parse(JSON.stringify(eventDates));
     try {
-      console.log("slotID",slotId);
       const match = matches.find((m) => m.id === matchId);
-
       if (match) {
-        setEventDates((prevEventDates) =>
-          prevEventDates.map((eventDate) => ({
-            ...eventDate,
-            slots: eventDate.slots.map((slot: any) => { 
-              if (slot.matches?.id == matchId) {
-                return { ...slot, matches: null };
-              }
-              if (slot.id ==slotId) {
-                return { ...slot, matches: match };
-              }
-              return slot;
-            }),
-          }))
-        );
+        const newEventDates = eventDates.map((eventDate) => ({
+          ...eventDate,
+          slots: eventDate.slots.map((slot: any) => {
+            if (slot.matches?.id == matchId) {
+              return { ...slot, matches: null };
+            }
+            if (slot.id == slotId) {
+              return { ...slot, matches: match };
+            }
+            return slot;
+          }),
+        }));
+        setEventDates(newEventDates);
+        mapEventDatesToMatches(newEventDates);
       }
-
-      // Gọi API giả lập, KHÔNG setMatches lại sau khi await
-     // await simulateFetch(null, 1000);
-
-     toast.success("Match updated successfully!")
+      await api.put(`/tournament/${tournamentId}/match/dragDrop`, {
+        matchId,
+        newSlotId: slotId,
+      });
+      toast.success("Match updated successfully!");
     } catch (error) {
-      console.error("Failed to update match:", error)
-      // Nếu có lỗi, có thể cần phục hồi state về trạng thái trước đó
+      toast.error("Failed to update match");
+      setEventDates(backup);
     }
   }
 
@@ -248,7 +247,7 @@ export default function TournamentSchedulePage() {
 
       {/* Content */}
       {view === "list" ? (
-        <ListScheduleView matches={matches} onUpdateMatch={handleUpdateMatch} />
+        <ListScheduleView matches={matches} onUpdateMatch={handleUpdateMatch} tournament={tournament} />
       ) : view === "calendar" ? (
         <CalendarView matches={matches} currentMonth={currentMonth} onUpdateMatch={handleUpdateMatch} />
       ) : (
@@ -257,6 +256,8 @@ export default function TournamentSchedulePage() {
           onUpdateMatch={handleUpdateMatch}
           dateFilter={dateFilter}
           eventDates={eventDates}
+          tournament={tournament}
+          onAfterGenerate={handleAfterGenerate}
         />
       )}
     </div>
