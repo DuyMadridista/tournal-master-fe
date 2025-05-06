@@ -10,9 +10,23 @@ interface FormatSelectorProps {
 }
 
 export default function FormatSelector({ selectedFormat, onFormatChange }: FormatSelectorProps) {
-  const formats: TournamentFormat[] = ["Group Stage", "Round Robin", "Single Elimination"]
+  const formats: TournamentFormat[] = ["GROUP_STAGE", "ROUND_ROBIN", "SINGLE_ELIMINATION"]
 
   const [isOpen, setIsOpen] = useState(false)
+
+  // Function to convert format from snake case to readable format
+  const formatToReadable = (format: TournamentFormat): string => {
+    switch (format) {
+      case "GROUP_STAGE":
+        return "Group Stage";
+      case "ROUND_ROBIN":
+        return "Round Robin";
+      case "SINGLE_ELIMINATION":
+        return "Single Elimination";
+      default:
+        return format;
+    }
+  }
 
   const handleSelect = (format: TournamentFormat) => {
     if (onFormatChange) {
@@ -33,7 +47,7 @@ export default function FormatSelector({ selectedFormat, onFormatChange }: Forma
           className="flex items-center justify-between w-full p-2 border border-neutral-200 rounded-md bg-white hover:border-primary-300 transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <span>{selectedFormat}</span>
+          <span>{formatToReadable(selectedFormat)}</span>
           <ChevronDown className={`w-4 h-4 ml-2 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
         </button>
 
@@ -47,7 +61,7 @@ export default function FormatSelector({ selectedFormat, onFormatChange }: Forma
                     className="flex items-center justify-between w-full px-4 py-2 text-left hover:bg-primary-50 transition-colors"
                     onClick={() => handleSelect(format)}
                   >
-                    <span>{format}</span>
+                    <span>{formatToReadable(format)}</span>
                     {selectedFormat === format && <Check className="w-4 h-4 text-primary-500" />}
                   </button>
                 </li>

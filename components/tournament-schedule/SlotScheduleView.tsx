@@ -42,7 +42,7 @@ interface TimeSlot {
 
 interface SlotScheduleViewProps {
   matches: Match[]
-  onUpdateMatch: (matchId: string, slotID:string ) => Promise<void>
+  onUpdateMatch: (matchId: string, slotID: string) => Promise<void>
   dateFilter: "all" | string
   eventDates: any[]
   tournament: Tournament | null
@@ -63,8 +63,8 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
     endTime: "18:00",
   })
 
-  
-  
+
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -84,17 +84,17 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
   const handleDragEnd = async (event: any) => {
     setIsDragging(false)
     setActiveId(null)
-    
+
     // Remove the animation from all drop areas
     document.querySelectorAll('[data-droppable="true"]').forEach((el) => {
       el.classList.remove("pulse-animation")
     })
 
-    const { active, over } = event   
+    const { active, over } = event
     if (over && active.id !== over.id) {
       const match = matches.find((m) => m.id.toString() === active.id.toString())
       if (!match) return;
-;
+      ;
       const slot = eventDates.flatMap(e => e.slots).find(s => s.id === over.id) || null;
 
       // Only allow drop if slot is empty
@@ -120,14 +120,14 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
   const handleGenerateSchedule = async () => {
     // call api generate schedule
     setIsLoading(true)
-    const res=await api.post(`/generate/${tournamentId}`, {
+    const res = await api.post(`/generate/${tournamentId}`, {
       duration: planSettings.matchDuration,
       betweenTime: planSettings.timeBetweenMatches,
       startTime: planSettings.startTime,
       endTime: planSettings.endTime,
     })
-    
-    if( res.data?.success && onAfterGenerate){
+
+    if (res.data?.success && onAfterGenerate) {
       onAfterGenerate()
     }
     setIsLoading(false)
@@ -142,8 +142,8 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
     <div className={`flex flex-col lg:flex-row gap-6 ${isLoading ? "opacity-50" : ""}`}>
       <DndContext
         sensors={sensors}
-        onDragStart={isLoading ? undefined :handleDragStart}
-        onDragEnd={isLoading ? undefined :handleDragEnd}
+        onDragStart={isLoading ? undefined : handleDragStart}
+        onDragEnd={isLoading ? undefined : handleDragEnd}
         collisionDetection={closestCenter}
         modifiers={[restrictToWindowEdges]}
       >
@@ -285,18 +285,18 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
           <button
             onClick={handleGenerateSchedule}
             className="w-full btn bg-green-500 p-3 flex items-center justify-center gap-2"
-            disabled={isLoading || tournament?.status !== "READY"}
+            disabled={isLoading || (tournament?.status !== "READY" && tournament?.status !== "NEED_INFORMATION")}
           >
             <RefreshCw className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
             {isLoading ? "Generating..." : "GENERATE"}
           </button>
-          {tournament?.status !== "READY"   && (
-          <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-800">
-              Schedule generation is disabled as the tournament has already started
-            </p>
-          </div>)}
+          {tournament?.status !== "READY" && tournament?.status !== "NEED_INFORMATION" && (
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800">
+                Schedule generation is disabled as the tournament has already started
+              </p>
+            </div>)}
         </div>
       </div>
     </div>
@@ -309,6 +309,7 @@ function DraggableMatch({ match, tournament, date }: { match: Match, tournament:
     id: match.id,
     data: { match },
   });
+  console.log(match.group);
 
   const team1Name = match.teamOne?.teamName || "";
   const team2Name = match.teamTwo?.teamName || "";
@@ -323,21 +324,26 @@ function DraggableMatch({ match, tournament, date }: { match: Match, tournament:
         opacity: isDragging ? 0.5 : 1,
       }}
     >
-      <div className="flex justify-between items-center mb-2">
-        <div className="text-sm font-medium">{team1Name}</div>
-        <div className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">Home</div>
-      </div>
-      <div className="flex justify-between items-center">
-        <div className="text-sm font-medium">{team2Name}</div>
-        <div className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded">Away</div>
-      </div>
-
-      { (
-        <div className="mt-2 text-xs text-gray-500 flex items-center">
-          <MapPin className="h-3 w-3 mr-1" />
-          {tournament.place} - {date?.getDate()}
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+        Group {match.group}
+      </span>
+      <div className="flex items-center justify-center">
+        <div className="flex-1 text-right">
+          <span className="text-lg font-medium">{team1Name}</span>
         </div>
-      )}
+
+        <div className="mx-4 text-center">
+          <span className="text-xl font-bold text-gray-500">vs</span>
+        </div>
+
+        <div className="flex-1">
+          <span className="text-lg font-medium">{team2Name}</span>
+        </div>
+      </div>
+      <div className="mt-2 text-xs text-gray-500 flex items-center justify-center">
+        <MapPin className="h-3 w-3 mr-1" />
+        {tournament.place}  {date? "-" + date.getDate() : ""}
+      </div>
     </div>
   );
 }
@@ -352,22 +358,21 @@ function SlotDropArea({ slot, tournament }: { slot: TimeSlot, tournament: Tourna
     <div
       ref={setNodeRef}
       data-droppable="true"
-      className={`p-3 rounded-lg ${
-        isOver
+      className={`p-3 rounded-lg ${isOver
           ? "border-2 border-primary-400 bg-primary-50"
-          : slot.matches===null
+          : slot.matches === null
             ? "border-2 border-dashed border-gray-300 bg-gray-50"
             : "border border-gray-200 bg-white"
-      } min-h-[120px] transition-colors duration-200`}
+        } min-h-[120px] transition-colors duration-200`}
     >
       <div className="text-sm font-medium text-gray-700 mb-2">
         {slot.startTime} - {slot.endTime}
       </div>
 
-      {slot.matches ===null ? (
+      {slot.matches === null ? (
         <div className="h-full flex flex-col items-center justify-center text-sm text-gray-500 py-4">
           <p>
-             {slot.startTime} • {slot.endTime}
+            {slot.startTime} • {slot.endTime}
           </p>
           <p className="text-gray-400 mt-1">Drop match here</p>
         </div>

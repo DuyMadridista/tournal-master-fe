@@ -24,20 +24,19 @@ interface MatchDay {
   notes?: string
 }
 
-export default function TournamentDetails() {
+export default function TournamentDetails({ tournamentId }: { tournamentId: string }) {
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [organizers, setOrganizers] = useState<Organizer[]>([])
   const [matchDays, setMatchDays] = useState<MatchDay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
   // For demo, use hardcoded id = 31. Replace with router param as needed.
   useEffect(() => {
     const fetchTournament = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get("http://localhost:6969/tournament/31");
+        const res = await axios.get(`http://localhost:6969/tournament/${tournamentId}`);
         const data = res.data.data;
         // Map category (may be object)
         const category = typeof data.category === "object" ? data.category.categoryName : data.category;
@@ -63,10 +62,12 @@ export default function TournamentDetails() {
           id: String(data.id || ""),
           title: data.title || "",
           category: category || "",
+          status: data.status || "",
+          organizers: data.organizers || [],
+          place: data.place || "",
           format: data.format === "ROUND_ROBIN" ? "Round Robin" : (data.format || ""),
           location: data.place || "",
           description: data.description || "",
-          // Sort eventDates by date ascending
           startDate: (() => {
             if (data.eventDates && data.eventDates.length > 0) {
               const sorted = [...data.eventDates].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -121,7 +122,7 @@ export default function TournamentDetails() {
   const handleFormatChange = (format: TournamentFormat) => {
     setTournament(prev => {
       if (!prev) return prev;
-      if (format !== "Group Stage") {
+      if (format !== "GROUP_STAGE") {
         return {
           ...prev,
           format,
@@ -238,7 +239,7 @@ export default function TournamentDetails() {
               </div>
             </div>
 
-            {tournament.format === "Group Stage" && tournament.groupStageSettings && (
+            {tournament.format === "GROUP_STAGE" && tournament.groupStageSettings && (
               <div className="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-100">
                 <h4 className="text-lg font-medium text-primary-700 mb-3">Group Stage Settings</h4>
                 <GroupStageSettingsComponent

@@ -53,6 +53,7 @@ export default function TournamentSchedulePage() {
       setEventDates(apiData)
       mapEventDatesToMatches(apiData)
     } catch (error) {
+      console.error("Failed to load matches:", error)
       toast.error("Failed to load matches")
     } finally {
       setIsLoading(false)
@@ -79,12 +80,12 @@ export default function TournamentSchedulePage() {
                 startTime: slot.startTime,
                 endTime: slot.endTime,
                 teamOne: {
-                  teamId: String(slot.matches.teamOne.teamId),
-                  teamName: slot.matches.teamOne.teamName,
+                  teamId: String(slot.matches.teamOne?.teamId),
+                  teamName: slot.matches.teamOne?.teamName,
                 },
                 teamTwo: {
-                  teamId: String(slot.matches.teamTwo.teamId),
-                  teamName: slot.matches.teamTwo.teamName,
+                  teamId: String(slot.matches.teamTwo?.teamId),
+                  teamName: slot.matches.teamTwo?.teamName,
                 },
                 venue: tournament?.place ?? "", 
                 round: undefined, 
