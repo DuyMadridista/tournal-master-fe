@@ -109,6 +109,7 @@ export interface Match {
     team1: Lineup
     team2: Lineup
   }
+  type?: string
 }
 
 export interface Standing {

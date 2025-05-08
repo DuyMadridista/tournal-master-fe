@@ -1,0 +1,73 @@
+.table-header-cell {
+  background-color: transparent !important;
+  color: white !important;
+  font-weight: 500;
+  text-transform: uppercase;
+  border-right: 1px solid rgb(224, 224, 224);
+  border-collapse: collapse;
+}
+.noitem-container {
+  text-align: center;
+  color: gray;
+  padding: 20px 0;
+}
+.noitem-wrapper {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+}
+.position-cell {
+  font-weight: bold !important;
+  font-size: 1.4rem !important;
+  height: 50px;
+  position: relative !important;
+}
+.position-indicator {
+  position: absolute;
+  height: 80%;
+  width: 4px;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+}
+.position-value {
+  font-weight: bold !important;
+  font-size: 1.4rem !important;
+}
+.teamname-cell {
+  font-weight: bold !important;
+}
+.point-cell {
+  font-weight: bold !important;
+}
+.last5-container {
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+}
+.last5-match-container {
+  cursor: 'pointer';
+}
+.last5-match-container:hover :first-child {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.last5-item {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.last5-item-text {
+  line-height: 24px !important;
+  color: white;
+  font-size: 12px !important;
+  user-select: none;
+  font-weight: bold !important;
+}

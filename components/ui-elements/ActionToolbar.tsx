@@ -27,8 +27,8 @@ export default function ActionToolbar({
     <div className="mb-6 bg-white rounded-xl p-5 shadow-card border border-neutral-200 animate-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-          <div className="bg-gradient-to-r from-primary-600 to-primary-500 p-2 rounded-lg shadow-sm">
-            <h2 className="text-2xl font-bold text-white">{title}</h2>
+          <div className="bg-gradient-to-r from-primary-500 to-primary-500 p-2 rounded-lg shadow-sm">
+            <h2 className="text-xl font-bold text-white">{title}</h2>
           </div>
           {totalItems !== undefined && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
@@ -49,8 +49,8 @@ export default function ActionToolbar({
               </div>
               <input
                 type="search"
-                className="input pl-10 w-full focus:border-primary-300 focus:ring-primary-300"
-                placeholder="Search..."
+                className="input pl-10 w-full focus:border-primary-300 focus:ring-primary-300 border-neutral-200"
+                placeholder="Search Team Name ..."
                 onChange={(e) => onSearch && onSearch(e.target.value)}
               />
             </div>

@@ -25,7 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const isMobile = useMediaQuery("(max-width: 1024px)")
   const pathname = usePathname()
   const params = useParams()
-  const tournamentId = params.id as string
+  const tournamentId = params?.id as string
   const router = useRouter();
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <LoadingOverlay />
 
       <header
-        className={`sticky top-0 z-50 bg-gradient-to-r from-primary-700 to-primary-600 text-white transition-all duration-300 ${
+        className={`sticky top-0 z-50 bg-gradient-to-r from-primary-500 to-primary-600 text-white transition-all duration-300 ${
           scrolled ? "shadow-lg" : ""
         }`}
       >
@@ -114,9 +114,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
           {!isMobile && (
             <div className="flex items-center">
               <div className="w-[250px] flex items-center px-4">
-                <h2 className="text-lg font-semibold text-white">{getPageTitle()}</h2>
+                <div className="bg-purple-600 p-2 rounded-full mr-2">
+                <Trophy className="h-6 w-6 text-white" />
               </div>
-              <div className="relative max-w-md w-full">
+                <h2 className="text-lg font-semibold text-white">Tourna Master</h2>
+              </div>
+              {/* <div className="relative max-w-md w-full">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-primary-300" />
                 </div>
@@ -125,7 +128,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                   placeholder="Search..."
                   className="block w-full pl-10 pr-3 py-2 border border-primary-400 rounded-md bg-primary-800/20 text-white placeholder-primary-300 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                 />
-              </div>
+              </div> */}
             </div>
           )}
 
