@@ -8,137 +8,94 @@ import { useDataFetching } from "../../../context/DataFetchingContext"
 import LoadingSpinner from "../../../components/ui-elements/LoadingSpinner"
 import { Button } from "../../../components/ui/button"
 
-interface EventDate {
-  id: string
-  date: string
-  tournamentId: string
-}
-
-interface Category {
-  id: string
-  categoryName: string
-}
-
-interface Organizer {
-  id: string
-  fullName: string
-  email: string
-}
-
-interface MatchOfEventDate {
-  id: number
-  numMatch: number
-  round: number
-  _startTime: string
-  _endTime: string
-  status: string
-  teamOne?: {
-    id: number
-    name: string
-  }
-  teamTwo?: {
-    id: number
-    name: string
-  }
-  eventDate: EventDate
-}
-
-interface TournamentPlan {
-  matchDuration: number
-  timeBetween: number
-  startTimeDefault: string
-  endTimeDefault: string
-}
-
-interface Progress {
-  totalTeam: number
-  progress: number
-  totalMatch: number
-  upcomingMatch: number
-  finishedMatch: number
-}
-
-interface UpcomingMatch {
-  id: number
-  teamOneResult: number
-  teamTwoResult: number
-  _startTime: string
-  _endTime: string
-  matchDuration: number
-  title: string | null
-  type: string
-  createdAt: string
-  updatedAt: string
-  round: number
-  seedIndex: number
-  eventDate: EventDate
-  teamOne?: {
-    teamId: number
-    teamName: string
-  }
-  teamTwo?: {
-    teamId: number
-    teamName: string
-  }
-}
-
 interface TournamentDetail {
-  id: number
+  id: string
   title: string
-  description: string
-  category: Category
-  status: string
-  organizers: Organizer[]
-  eventDates: EventDate[]
+  category: string
   format: string
-  numberOfPlayers: number
-  numberOfGroups: number
-  teamsPerGroup: number
-  advancePerGroup: number
-  place: string
-}
-
-interface TournamentResponse {
-  data: TournamentDetail
-  success: boolean
-  total: number
-  additionalData: {
-    matchOfEventDates: MatchOfEventDate[]
-    tournamentPlan: TournamentPlan
-    progress: Progress
-    upcomingMatch: UpcomingMatch[]
-  }
+  location: string
+  description: string
+  startDate: Date
+  endDate: Date
+  status: "active" | "completed" | "upcoming"
+  teamsCount: number
+  matchesCount: number
+  completedMatches: number
+  upcomingMatches: number
+  progress: number
+  organizers: { name: string; role: string }[]
+  nextMatches: {
+    id: string
+    date: Date
+    time: string
+    team1: string
+    team2: string
+    venue: string
+  }[]
 }
 
 export default function TournamentOverview() {
   const params = useParams()
   const tournamentId = params?.id as string
-  const [isLoading, setIsLoading] = useState(true)
   const [tournament, setTournament] = useState<TournamentDetail | null>(null)
-  const [progress, setProgress] = useState<Progress | null>(null)
-  const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const { simulateFetch } = useDataFetching()
 
   useEffect(() => {
     const loadTournament = async () => {
       try {
-        setIsLoading(true)
-        const response = await fetch(`http://localhost:6969/tournament/overview/${tournamentId}`)
-        const data = await response.json()
-        
-        // Set tournament details
-        if (data.data) {
-          setTournament(data.data)
+        // Sample data
+        const sampleTournament: TournamentDetail = {
+          id: tournamentId,
+          title: "Summer Football Championship 2023",
+          category: "Football",
+          format: "Group Stage + Knockout",
+          location: "City Stadium",
+          description: "Annual summer football tournament for amateur teams.",
+          startDate: new Date("2023-06-15"),
+          endDate: new Date("2023-07-30"),
+          status: "active",
+          teamsCount: 16,
+          matchesCount: 32,
+          completedMatches: 14,
+          upcomingMatches: 18,
+          progress: 45,
+          organizers: [
+            { name: "John Smith", role: "Tournament Manager" },
+            { name: "Sarah Johnson", role: "Coordinator" },
+            { name: "Michael Brown", role: "Head Referee" },
+          ],
+          nextMatches: [
+            {
+              id: "match-1",
+              date: new Date(Date.now() + 86400000), // Tomorrow
+              time: "15:00",
+              team1: "FC Barcelona",
+              team2: "Real Madrid",
+              venue: "Field A",
+            },
+            {
+              id: "match-2",
+              date: new Date(Date.now() + 86400000), // Tomorrow
+              time: "17:30",
+              team1: "Manchester United",
+              team2: "Bayern Munich",
+              venue: "Field B",
+            },
+            {
+              id: "match-3",
+              date: new Date(Date.now() + 172800000), // Day after tomorrow
+              time: "16:00",
+              team1: "Liverpool",
+              team2: "PSG",
+              venue: "Field A",
+            },
+          ],
         }
-        
-        // Set progress data
-        if (data.additionalData && data.additionalData.progress) {
-          setProgress(data.additionalData.progress)
-        }
-        
-        // Set upcoming matches
-        if (data.additionalData && data.additionalData.upcomingMatch) {
-          setUpcomingMatches(data.additionalData.upcomingMatch)
-        }
+
+        // Simulate API call
+        const data = await simulateFetch(sampleTournament, 1500)
+        setTournament(data)
       } catch (error) {
         console.error("Failed to load tournament details:", error)
       } finally {
@@ -147,46 +104,14 @@ export default function TournamentOverview() {
     }
 
     loadTournament()
-  }, [tournamentId])
+  }, [tournamentId, simulateFetch])
 
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr)
+  const formatDate = (date: Date): string => {
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     }).format(date)
-  }
-
-  // Get start and end dates from event dates array
-  const getStartDate = (eventDates: EventDate[]): string => {
-    if (!eventDates || eventDates.length === 0) return ""
-    const dates = [...eventDates].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    return dates[0].date
-  }
-
-  const getEndDate = (eventDates: EventDate[]): string => {
-    if (!eventDates || eventDates.length === 0) return ""
-    const dates = [...eventDates].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    return dates[0].date
-  }
-
-  const formatMatchTime = (timeStr: string): string => {
-    const [hours, minutes] = timeStr.split(":")
-    return `${hours}:${minutes}`
-  }
-
-  const getFormatDisplay = (format: string): string => {
-    switch (format) {
-      case "GROUP_STAGE":
-        return "Group Stage"
-      case "KNOCKOUT":
-        return "Knockout"
-      case "ROUND_ROBIN":
-        return "Round Robin"
-      default:
-        return format
-    }
   }
 
   if (isLoading) {
@@ -197,12 +122,11 @@ export default function TournamentOverview() {
     )
   }
 
-  if (!tournament || !progress) {
+  if (!tournament) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <p className="text-center text-neutral-600">Tournament data not found</p>
-        </div>
+      <div className="text-center p-8">
+        <h3 className="text-lg font-medium text-neutral-800 mb-2">Unable to load tournament information</h3>
+        <p className="text-neutral-600">An error occurred while loading tournament details.</p>
       </div>
     )
   }
@@ -217,16 +141,19 @@ export default function TournamentOverview() {
             <div className="flex items-center mt-2 text-sm text-neutral-600">
               <Calendar className="w-4 h-4 mr-1" />
               <span>
-                {formatDate(getStartDate(tournament.eventDates))} - {formatDate(getEndDate(tournament.eventDates))}
+                {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
               </span>
             </div>
           </div>
           <div className="mt-4 md:mt-0 flex space-x-2">
-
-            <Link href={`/tournaments/${tournamentId}/leaderboard`} className="flex items-center bg-primary-500 text-white px-4 py-2 rounded-md">
+            <Button variant="outline" size="sm" className="flex items-center">
+              <Edit className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
+            <Button size="sm" className="flex items-center">
               <Trophy className="w-4 h-4 mr-1" />
               Leaderboard
-            </Link>
+            </Button>
           </div>
         </div>
 
@@ -237,7 +164,7 @@ export default function TournamentOverview() {
             </div>
             <div className="ml-3">
               <div className="text-sm font-medium text-neutral-500">Location</div>
-              <div className="text-neutral-800">{tournament.place}</div>
+              <div className="text-neutral-800">{tournament.location}</div>
             </div>
           </div>
 
@@ -247,7 +174,7 @@ export default function TournamentOverview() {
             </div>
             <div className="ml-3">
               <div className="text-sm font-medium text-neutral-500">Category</div>
-              <div className="text-neutral-800">{tournament.category.categoryName}</div>
+              <div className="text-neutral-800">{tournament.category}</div>
             </div>
           </div>
 
@@ -257,7 +184,7 @@ export default function TournamentOverview() {
             </div>
             <div className="ml-3">
               <div className="text-sm font-medium text-neutral-500">Format</div>
-              <div className="text-neutral-800">{getFormatDisplay(tournament.format)}</div>
+              <div className="text-neutral-800">{tournament.format}</div>
             </div>
           </div>
         </div>
@@ -265,18 +192,22 @@ export default function TournamentOverview() {
 
       <div className="flex justify-between items-start mb-6">
         <h2 className="text-2xl font-bold text-neutral-800">Tournament Overview</h2>
+        <Link href={`/tournaments/${tournamentId}/edit`} className="btn btn-outline flex items-center space-x-2">
+          <Edit className="h-5 w-5" />
+          <span>Edit</span>
+        </Link>
       </div>
 
       {/* Tournament Progress */}
       <div className="mb-8">
         <h3 className="text-lg font-medium text-neutral-800 mb-3">Tournament Progress</h3>
         <div className="w-full bg-neutral-200 rounded-full h-3 mb-2">
-          <div className="bg-primary-500 h-3 rounded-full" style={{ width: `${progress.progress}%` }}></div>
+          <div className="bg-primary-500 h-3 rounded-full" style={{ width: `${tournament.progress}%` }}></div>
         </div>
         <div className="flex justify-between text-sm text-neutral-600">
-          <span>Start: {formatDate(getStartDate(tournament.eventDates))}</span>
-          <span>{progress.progress}% completed</span>
-          <span>End: {formatDate(getEndDate(tournament.eventDates))}</span>
+          <span>Start: {formatDate(tournament.startDate)}</span>
+          <span>{tournament.progress}% completed</span>
+          <span>End: {formatDate(tournament.endDate)}</span>
         </div>
       </div>
 
@@ -289,7 +220,7 @@ export default function TournamentOverview() {
             </div>
             <h4 className="text-lg font-medium text-neutral-800">Participating Teams</h4>
           </div>
-          <p className="text-3xl font-bold text-neutral-800">{progress.totalTeam}</p>
+          <p className="text-3xl font-bold text-neutral-800">{tournament.teamsCount}</p>
           <Link
             href={`/tournaments/${tournamentId}/participants`}
             className="mt-2 inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
@@ -306,7 +237,7 @@ export default function TournamentOverview() {
             </div>
             <h4 className="text-lg font-medium text-neutral-800">Total Matches</h4>
           </div>
-          <p className="text-3xl font-bold text-neutral-800">{progress.totalMatch}</p>
+          <p className="text-3xl font-bold text-neutral-800">{tournament.matchesCount}</p>
           <Link
             href={`/tournaments/${tournamentId}/schedule`}
             className="mt-2 inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
@@ -323,7 +254,7 @@ export default function TournamentOverview() {
             </div>
             <h4 className="text-lg font-medium text-neutral-800">Completed</h4>
           </div>
-          <p className="text-3xl font-bold text-neutral-800">{progress.finishedMatch}</p>
+          <p className="text-3xl font-bold text-neutral-800">{tournament.completedMatches}</p>
           <Link
             href={`/tournaments/${tournamentId}/results`}
             className="mt-2 inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
@@ -340,7 +271,7 @@ export default function TournamentOverview() {
             </div>
             <h4 className="text-lg font-medium text-neutral-800">Upcoming</h4>
           </div>
-          <p className="text-3xl font-bold text-neutral-800">{progress.upcomingMatch}</p>
+          <p className="text-3xl font-bold text-neutral-800">{tournament.upcomingMatches}</p>
           <Link
             href={`/tournaments/${tournamentId}/schedule`}
             className="mt-2 inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
@@ -360,11 +291,11 @@ export default function TournamentOverview() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-neutral-500 mb-1">Format</p>
-                <p className="font-medium">{getFormatDisplay(tournament.format)}</p>
+                <p className="font-medium">{tournament.format}</p>
               </div>
               <div>
                 <p className="text-sm text-neutral-500 mb-1">Location</p>
-                <p className="font-medium">{tournament.place}</p>
+                <p className="font-medium">{tournament.location}</p>
               </div>
               <div>
                 <p className="text-sm text-neutral-500 mb-1">Description</p>
@@ -375,8 +306,8 @@ export default function TournamentOverview() {
                 <ul className="space-y-2">
                   {tournament.organizers.map((organizer, index) => (
                     <li key={index} className="flex justify-between">
-                      <span className="font-medium">{organizer.fullName}</span>
-                      <span className="text-neutral-500">{organizer.email}</span>
+                      <span className="font-medium">{organizer.name}</span>
+                      <span className="text-neutral-500">{organizer.role}</span>
                     </li>
                   ))}
                 </ul>
@@ -399,37 +330,35 @@ export default function TournamentOverview() {
           <h3 className="text-lg font-medium text-neutral-800 mb-3">Upcoming Matches</h3>
           <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4">
             <div className="space-y-4">
-              {upcomingMatches.length > 0 ? (
-                upcomingMatches.map((match) => (
-                  <div key={match.id} className="p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50">
-                    <div className="flex items-center text-sm text-neutral-500 mb-2">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      <span className="mr-3">
-                        {formatDate(match.eventDate.date)}
-                      </span>
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span className="mr-3">{formatMatchTime(match._startTime)}</span>
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span>Round {match.round}</span>
+              {tournament.nextMatches.map((match) => (
+                <div key={match.id} className="p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50">
+                  <div className="flex items-center text-sm text-neutral-500 mb-2">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    <span className="mr-3">
+                      {new Intl.DateTimeFormat('en-US', {
+                        weekday: 'long',
+                        month: 'short',
+                        day: 'numeric',
+                      }).format(match.date)}
+                    </span>
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span className="mr-3">{match.time}</span>
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span>{match.venue}</span>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <div className="flex-1 text-right">
+                      <span className="font-medium">{match.team1}</span>
                     </div>
-                    <div className="flex items-center justify-center">
-                      <div className="flex-1 text-right">
-                        <span className="font-medium">{match.teamOne?.teamName || 'TBD'}</span>
-                      </div>
-                      <div className="mx-4 text-center">
-                        <span className="text-lg font-bold text-neutral-400">VS</span>
-                      </div>
-                      <div className="flex-1">
-                        <span className="font-medium">{match.teamTwo?.teamName || 'TBD'}</span>
-                      </div>
+                    <div className="mx-4 text-center">
+                      <span className="text-lg font-bold text-neutral-400">VS</span>
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-medium">{match.team2}</span>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center p-4 text-neutral-500">
-                  No upcoming matches scheduled
                 </div>
-              )}
+              ))}
             </div>
             <div className="mt-4 text-center">
               <Link
@@ -444,7 +373,7 @@ export default function TournamentOverview() {
         </div>
       </div>
 
-      {/* Liên kết nhanh */}
+      {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           href={`/tournaments/${tournamentId}/participants`}
@@ -454,8 +383,8 @@ export default function TournamentOverview() {
             <Users className="h-5 w-5" />
           </div>
           <div>
-            <h4 className="font-medium text-neutral-800">Participants</h4>
-            <p className="text-sm text-neutral-500">Manage tournament participants</p>
+            <h4 className="font-medium text-neutral-800">Participating Teams</h4>
+            <p className="text-sm text-neutral-500">Manage teams participating in the tournament</p>
           </div>
           <ArrowRight className="h-4 w-4 ml-auto text-primary-500" />
         </Link>
@@ -469,7 +398,7 @@ export default function TournamentOverview() {
           </div>
           <div>
             <h4 className="font-medium text-neutral-800">Schedule</h4>
-            <p className="text-sm text-neutral-500">View and manage tournament schedule</p>
+            <p className="text-sm text-neutral-500">View and manage match schedule</p>
           </div>
           <ArrowRight className="h-4 w-4 ml-auto text-primary-500" />
         </Link>

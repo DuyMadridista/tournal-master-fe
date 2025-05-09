@@ -38,6 +38,7 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
       try {
         const res = await axios.get(`http://localhost:6969/tournament/${tournamentId}`);
         const data = res.data.data;
+        const progress = res.data.additionalData?.progress;
         // Map category (may be object)
         const category = typeof data.category === "object" ? data.category.categoryName : data.category;
         // Map organizers
@@ -88,6 +89,10 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
             teamsPerGroup: data.teamsPerGroup,
             advancePerGroup: data.advancePerGroup,
           } : undefined,
+          progress: progress?.progress,
+          totalMatch: progress?.totalMatch,
+          totalTeam: progress?.totalTeam,
+          totalPlayer: progress?.totalPlayer,
         });
       } catch (err: any) {
         setError("Failed to fetch tournament data");
@@ -292,7 +297,7 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
             <div className="mt-4">
               <h4 className="text-sm font-medium text-neutral-500 mb-2">Tournament Progress</h4>
               <div className="w-full bg-neutral-200 rounded-full h-2.5">
-                <div className="bg-primary-500 h-2.5 rounded-full w-[45%]"></div>
+                <div className={`bg-primary-500 h-2.5 rounded-full w-[${tournament?.progress}%]`} />
               </div>
               <div className="flex justify-between text-xs text-neutral-500 mt-1">
                 <span>Registration</span>
@@ -305,15 +310,15 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
             <div className="mt-8 grid grid-cols-2 gap-4">
               <div className="bg-primary-50 rounded-lg p-3 border border-primary-100">
                 <div className="text-xs font-medium text-neutral-500 mb-1">Teams</div>
-                <div className="text-2xl font-bold text-primary-700">16</div>
+                <div className="text-2xl font-bold text-primary-700">{tournament?.totalTeam}</div>
               </div>
               <div className="bg-secondary-50 rounded-lg p-3 border border-secondary-100">
                 <div className="text-xs font-medium text-neutral-500 mb-1">Matches</div>
-                <div className="text-2xl font-bold text-secondary-700">32</div>
+                <div className="text-2xl font-bold text-secondary-700">{tournament?.totalMatch}</div>
               </div>
               <div className="bg-accent-50 rounded-lg p-3 border border-accent-100">
-                <div className="text-xs font-medium text-neutral-500 mb-1">Players</div>
-                <div className="text-2xl font-bold text-accent-700">240</div>
+                <div className="text-xs font-medium text-neutral-500 mb-1">Total Players</div>
+                <div className="text-2xl font-bold text-accent-700">{tournament?.totalPlayer}</div>
               </div>
               <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200">
                 <div className="text-xs font-medium text-neutral-500 mb-1">Match Days</div>

@@ -17,6 +17,11 @@ export interface Tournament {
   numberOfPlayers?: number
   groupStageSettings?: GroupStageSettings
   matchDays?: MatchDay[]
+  progress?: number
+  totalMatch?: number
+  totalTeam?: number
+  totalPlayer?: number
+  totalEventDate?: number
 }
 
 export interface GroupStageSettings {
