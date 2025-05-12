@@ -304,15 +304,15 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
 }
 
 // Component for a match that can be dragged
-function DraggableMatch({ match, tournament, date }: { match: Match, tournament: Tournament, date: Date }) {
+function DraggableMatch({ match, tournament, date }: { match: Match, tournament?: Tournament, date: Date }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: match.id,
     data: { match },
   });
   console.log(match.group);
 
-  const team1Name = match.teamOne?.teamName || "";
-  const team2Name = match.teamTwo?.teamName || "";
+  const team1Name = match.teamOne?.teamName || "Tobe decided...";
+  const team2Name = match.teamTwo?.teamName || "Tobe decided...";
 
   return (
     <div
@@ -324,9 +324,9 @@ function DraggableMatch({ match, tournament, date }: { match: Match, tournament:
         opacity: isDragging ? 0.5 : 1,
       }}
     >
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+      {match.group && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
         Group {match.group}
-      </span>
+      </span>}
       <div className="flex items-center justify-center">
         <div className="flex-1 text-right">
           <span className="text-lg font-medium">{team1Name}</span>
@@ -342,14 +342,14 @@ function DraggableMatch({ match, tournament, date }: { match: Match, tournament:
       </div>
       <div className="mt-2 text-xs text-gray-500 flex items-center justify-center">
         <MapPin className="h-3 w-3 mr-1" />
-        {tournament.place}  {date? "-" + date.getDate() : ""}
+        {tournament?.place}  {date? "-" + date.getDate() : ""}
       </div>
     </div>
   );
 }
 
 // Component for a slot that can receive matches
-function SlotDropArea({ slot, tournament }: { slot: TimeSlot, tournament: Tournament }) {
+function SlotDropArea({ slot, tournament }: { slot: TimeSlot, tournament?: Tournament }) {
   const { setNodeRef, isOver } = useDroppable({
     id: slot.id,
   })

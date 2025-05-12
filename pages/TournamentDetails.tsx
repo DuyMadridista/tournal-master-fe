@@ -270,7 +270,7 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
 
 
 
-          <OrganizersList organizers={organizers} onOrganizersChange={setOrganizers} />
+          <OrganizersList organizers={organizers} onOrganizersChange={setOrganizers} tournamentId={tournament.id} />
           <InfoCard isDanger title="Danger Zone">
             <p className="text-red-600 mb-4">
               This action cannot be undone. This will permanently delete the tournament and all associated data.
@@ -381,6 +381,7 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
                 endDate={tournament.endDate}
                 onMatchDaysChange={handleMatchDaysChange}
                 initialMatchDays={matchDays}
+                tournamentId={tournament.id}
               />
             </div>
           </InfoCard>

@@ -7,7 +7,7 @@ import { Plus, FileUp, Grid, Pencil, Trash, Users, Mail, Phone, UserCircle } fro
 import SkeletonLoader from "../components/ui-elements/SkeletonLoader"
 import PlayerManagementModal from "../components/player-management/PlayerManagementModal"
 import axios from "axios"
-import api from '../apis/api'
+import api, { getTournamentById } from '../apis/api'
 import { getLocalStorage } from "@/utils/localStorage"
 import React from "react"
 import { toast } from "react-toastify";
@@ -67,10 +67,13 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
   const [sortValue, setSortValue] = useState<string>("teamName")
   const [sortType, setSortType] = useState<"ASC"|"DESC">("ASC")
   const token = getLocalStorage('token')
+  const [format, setFormat] = useState<string>("GROUP_STAGE")
 
   // Fetch teams from API
   const fetchTeams = React.useCallback(async () => {
     if (!tournamentId) return;
+    const tournament = await getTournamentById(Number(tournamentId))
+    setFormat(tournament.data.format)
     setIsInitialLoading(true)
     setError(null)
     try {
@@ -82,6 +85,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
             keyword: searchQuery,
             sortValue: sortValue,
             sortType: sortType,
+            format: format,
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -335,6 +339,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
           onChange={handleFileChange}
         />
 
+        {format === "GROUP_STAGE" && (
         <button
           onClick={handleGenerateGroups}
           className="btn btn-md bg-purple-600 text-white hover:bg-purple-700 flex items-center space-x-2"
@@ -343,7 +348,8 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
           <Grid className="h-5 w-5" />
           <span>Generate Groups</span>
         </button>
-      </ActionToolbar>
+              )}
+        </ActionToolbar>
 
       {showAddForm && (
         <div className="mb-6 p-6 bg-white rounded-xl border border-primary-200 shadow-md animate-in">
@@ -431,7 +437,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
               <th className="table-head">No.</th>
               <th className="table-head cursor-pointer" onClick={() => handleSort("teamName")}>Team Name {sortValue === "teamName" && (sortType === "ASC" ? "▲" : "▼")}</th>
               <th className="table-head cursor-pointer" onClick={() => handleSort("tier")}>Tier {sortValue === "tier" && (sortType === "ASC" ? "▲" : "▼")}</th>
-              <th className="table-head cursor-pointer" onClick={() => handleSort("group")}>Group {sortValue === "group" && (sortType === "ASC" ? "▲" : "▼")}</th>
+              {format === "GROUP_STAGE" && <th className="table-head cursor-pointer" onClick={() => handleSort("group")}>Group {sortValue === "group" && (sortType === "ASC" ? "▲" : "▼")}</th>}
               <th className="table-head cursor-pointer" onClick={() => handleSort("leaderName")}>Leader {sortValue === "leaderName" && (sortType === "ASC" ? "▲" : "▼")}</th>
               <th className="table-head">Leader Email</th>
               <th className="table-head">Phone Number</th>
@@ -458,9 +464,9 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
                     {team.name}
                   </td>
                   <td className="table-cell text-neutral-500">{team.tier}</td>
-                  <td className="table-cell">
+                  {format === "GROUP_STAGE" && <td className="table-cell">
                     {team.group && <span className="badge badge-primary">Group {team.group}</span>}
-                  </td>
+                  </td>}
                   <td className="table-cell text-neutral-700">{team.leaderName}</td>
                   <td className="table-cell text-neutral-500 flex items-center">
                     <Mail className="h-4 w-4 mr-1 text-primary-500" />

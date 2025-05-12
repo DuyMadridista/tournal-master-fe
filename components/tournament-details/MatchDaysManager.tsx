@@ -5,6 +5,7 @@ import React from "react"
 import { useState, useEffect } from "react"
 import { Calendar, Plus, Save, X, Check, Info, AlertTriangle } from "lucide-react"
 import { useDataFetching } from "../../context/DataFetchingContext"
+import axios from "axios"
 
 interface MatchDay {
   id: string
@@ -19,6 +20,7 @@ interface MatchDaysManagerProps {
   endDate: Date
   onMatchDaysChange?: (matchDays: MatchDay[]) => void
   initialMatchDays?: MatchDay[]
+  tournamentId?: string
 }
 
 export default function MatchDaysManager({
@@ -26,6 +28,7 @@ export default function MatchDaysManager({
   endDate,
   onMatchDaysChange,
   initialMatchDays = [],
+  tournamentId,
 }: MatchDaysManagerProps) {
   const [matchDays, setMatchDays] = useState<MatchDay[]>(initialMatchDays)
   const [isAddingNew, setIsAddingNew] = useState(false)
@@ -35,7 +38,10 @@ export default function MatchDaysManager({
     isActive: true,
   })
   const [expandedDay, setExpandedDay] = useState<string | null>(null)
+  const [apiError, setApiError] = useState<string | null>(null)
   const { simulateFetch, isLoading } = useDataFetching()
+
+  const effectiveTournamentId = tournamentId 
 
   // Generate suggested match days when start/end dates change
   useEffect(() => {
@@ -86,15 +92,51 @@ export default function MatchDaysManager({
         currentDate.setDate(currentDate.getDate() + 1)
       }
 
-      // Simulate API call
+      // Simulate API call for UI feedback
       const result = await simulateFetch(suggestedDays, 1000)
       setMatchDays(result)
+
+      // Update event dates on the server
+      await updateEventDates(result)
 
       if (onMatchDaysChange) {
         onMatchDaysChange(result)
       }
     } catch (error) {
       console.error("Failed to generate match days:", error)
+    }
+  }
+
+  // Function to update event dates on the server
+  const updateEventDates = async (updatedMatchDays: MatchDay[]) => {
+    if (!effectiveTournamentId) {
+      console.error("Tournament ID is not available")
+      return
+    }
+
+    try {
+      setApiError(null)
+      // Extract unique dates from match days and format them as YYYY-MM-DD
+      const eventDates = [...new Set(
+        updatedMatchDays
+          .filter(day => day.isActive)
+          .map(day => day.date.toISOString().split('T')[0])
+      )]
+
+      // Make API call to update event dates
+      await axios.put(
+        `http://localhost:6969/tournament/${effectiveTournamentId}/detail`,
+        { eventDates },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      )
+    } catch (error) {
+      console.error("Failed to update event dates:", error)
+      setApiError("Failed to update event dates on the server")
     }
   }
 
@@ -110,11 +152,14 @@ export default function MatchDaysManager({
         notes: newMatchDay.notes,
       }
 
-      // Simulate API call
+      // Simulate API call for UI feedback
       await simulateFetch(matchDay, 800)
 
       const updatedMatchDays = [...matchDays, matchDay].sort((a, b) => a.date.getTime() - b.date.getTime())
       setMatchDays(updatedMatchDays)
+
+      // Update event dates on the server
+      await updateEventDates(updatedMatchDays)
 
       if (onMatchDaysChange) {
         onMatchDaysChange(updatedMatchDays)
@@ -133,11 +178,14 @@ export default function MatchDaysManager({
 
   const handleDeleteMatchDay = async (id: string) => {
     try {
-      // Simulate API call
+      // Simulate API call for UI feedback
       await simulateFetch(null, 500)
 
       const updatedMatchDays = matchDays.filter((day) => day.id !== id)
       setMatchDays(updatedMatchDays)
+
+      // Update event dates on the server
+      await updateEventDates(updatedMatchDays)
 
       if (onMatchDaysChange) {
         onMatchDaysChange(updatedMatchDays)
@@ -149,7 +197,7 @@ export default function MatchDaysManager({
 
   const handleUpdateMatchDay = async (id: string, updates: Partial<MatchDay>) => {
     try {
-      // Simulate API call
+      // Simulate API call for UI feedback
       await simulateFetch(null, 500)
 
       const updatedMatchDays = matchDays
@@ -157,6 +205,9 @@ export default function MatchDaysManager({
         .sort((a, b) => a.date.getTime() - b.date.getTime())
 
       setMatchDays(updatedMatchDays)
+
+      // Update event dates on the server
+      await updateEventDates(updatedMatchDays)
 
       if (onMatchDaysChange) {
         onMatchDaysChange(updatedMatchDays)
@@ -394,6 +445,17 @@ export default function MatchDaysManager({
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start space-x-3">
+          <div className="text-red-500 mt-0.5">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm text-red-700">{apiError}</p>
           </div>
         </div>
       )}

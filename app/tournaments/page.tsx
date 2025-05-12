@@ -269,6 +269,9 @@ function getStatusLabel(status: Tournament['status']) {
         })
         // Map API data to Tournament[]
         const apiData = res.data.data as any[]
+        console.log("dhgfjdsfg");
+        
+        console.log(apiData)
         const mapped: Tournament[] = apiData.map((item) => {
           // Dùng status gốc từ API
           const status: Tournament['status'] = item.status
@@ -339,10 +342,9 @@ function getStatusLabel(status: Tournament['status']) {
         });
         // Map API data to Tournament[]
         const apiData = res.data.data as any[];
+        console.log(apiData)
         const mapped: Tournament[] = apiData.map((item) => {
-  // Dùng status gốc từ API
   const status: Tournament['status'] = item.status;
-  // Dates
   let startDate = undefined, endDate = undefined;
   if (Array.isArray(item.eventDates) && item.eventDates.length > 0) {
     const dates = item.eventDates.map((d: any) => new Date(d.date));
@@ -358,9 +360,9 @@ function getStatusLabel(status: Tournament['status']) {
     startDate,
     endDate,
     status,
-    teamsCount: item.teamsCount || 0,
-    matchesCount: item.matchesCount || 0,
-    progress: 0, // You may calculate progress if API provides
+    teamsCount: item.numberOfTeams || 0,
+    matchesCount: item.numberOfMatches || 0,
+    progress: item.progress || 0,
   };
 });
         setTournaments(mapped);
@@ -772,12 +774,6 @@ function getStatusLabel(status: Tournament['status']) {
                     <span>View Details</span>
                   </Link>
                   <div className="flex gap-2">
-                    <Link
-                      href={`/tournaments/${tournament.id}/edit`}
-                      className="btn btn-outline flex items-center justify-center"
-                    >
-                      <Edit className="h-5 w-5" />
-                    </Link>
                     <button
                       onClick={() => handleDeleteTournament(tournament.id)}
                       className="btn btn-outline text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center justify-center"
