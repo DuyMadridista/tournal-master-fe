@@ -9,7 +9,7 @@ import { LeaderboardTable } from "@/components/leaderBoard/LeaderboardTable/Lead
 import { useParams } from "next/navigation"
 import { LeaderboardRecord } from "@/types/leaderboard"
 import api, { getTournamentById } from "@/apis/api"
-import { convertLeaderboardRecord } from "@/utils/leaderboard"
+import { convertGroupStageLeaderboardRecord, convertLeaderboardRecord } from "@/utils/leaderboard"
 import jsPDF from 'jspdf'
 
 
@@ -20,17 +20,23 @@ export default function Leaderboard() {
   const tournamentId = params?.id as string
   const leaderboardRef = useRef<HTMLDivElement>(null)
   const tableRef = useRef<HTMLDivElement>(null)
-
+  
 
 const getAll = async (tournamentId: number) => {
 
 
     const leaderboardResponse = await api.get(`/tournament/${tournamentId}/leaderboard`)
-
+    const tournament = await getTournamentById(tournamentId)
     if (leaderboardResponse.data.data) {
-      const convertedData = convertLeaderboardRecord(leaderboardResponse.data.data)
-      setLeaderboardData(convertedData)
-      setIsLoading(true)
+      if (tournament.data.format === "GROUP_STAGE") {
+        const convertedData = convertGroupStageLeaderboardRecord(leaderboardResponse.data.data)
+        setLeaderboardData(convertedData)
+        setIsLoading(true)
+      } else {
+        const convertedData = convertLeaderboardRecord(leaderboardResponse.data.data)
+        setLeaderboardData(convertedData)
+        setIsLoading(true)
+      }
     } else {
       setLeaderboardData({ leaderBoard: [], matches: [], started: false, teamsTop1: [], teamsTop2: [], teamsTop3: [] })
     }
@@ -284,7 +290,7 @@ useEffect(() => {
 
       {/* Podium display for top 3 teams */}
       {(format === "GROUP_STAGE" || format === "ROUND_ROBIN") && (
-        <FinalResultSection leaderboardData={leaderboardData} loading={loading} />
+        <FinalResultSection format={format} leaderboardData={leaderboardData} loading={loading} />
       )}
 
       {format === "GROUP_STAGE" && (

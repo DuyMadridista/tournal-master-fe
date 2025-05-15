@@ -334,7 +334,7 @@ export default function Result({ tournamentId }: ResultProps) {
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center space-x-2 text-gray-500 mb-2 md:mb-0">
                           <Clock className="h-4 w-4" />
-                          <span>{match.startTime} - {match.endTime}</span>
+                          <span>{match.startTime.slice(0, 5)} - {match.endTime.slice(0, 5)}</span>
                           {match.venue && (
                             <>
                               <span className="mx-2">•</span>
@@ -356,8 +356,13 @@ export default function Result({ tournamentId }: ResultProps) {
                           </span>
                         )}
                       </div>
-                      <div className="mt-3 flex items-center justify-center">
-                        <div className="flex-1 flex items-center justify-end">
+                      <div className="mt-3 grid grid-cols-5 gap-4 items-center">
+                        {/* Update Result Button */}
+                        
+                        <div className="col-span-5 md:col-span-1 flex justify-center md:justify-end">
+                          {match.team1?.name !== "Tobe decided..." &&(<div>
+
+                          
                           <input
                             type="file"
                             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -366,17 +371,23 @@ export default function Result({ tournamentId }: ResultProps) {
                             onChange={() => handleUpdateResult(match.id)}
                           />
                           <button
-                            className="ml-4 btn btn-sm btn-outline flex items-center space-x-1"
+                            className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-1.5"
                             onClick={() => triggerFileInput(match.id)}
                             type="button"
                           >
                             <Upload className="h-4 w-4" />
-                            <span>Update result</span>
+                            <span className="text-sm font-medium">Update result</span>
                           </button>
-                          <span className="text-lg font-medium ml-2">{match.team1?.name}</span>
+                          </div>)}
                         </div>
 
-                        <div className="mx-4 flex items-center space-x-2">
+                        {/* Team 1 Name */}
+                        <div className="col-span-5 md:col-span-1 flex justify-center md:justify-end">
+                          <span className="text-lg font-medium text-right">{match.team1?.name}</span>
+                        </div>
+
+                        {/* Score */}
+                        <div className="col-span-5 md:col-span-1 flex items-center justify-center space-x-2">
                           <input
                             type="number"
                             min="0"
@@ -396,15 +407,20 @@ export default function Result({ tournamentId }: ResultProps) {
                           />
                         </div>
 
-                        <div className="flex-1 flex items-center">
-                          <span className="text-lg font-medium">{match.team2?.name}</span>
+                        {/* Team 2 Name */}
+                        <div className="col-span-5 md:col-span-1 flex justify-center md:justify-start">
+                          <span className="text-lg font-medium text-left">{match.team2?.name}</span>
+                        </div>
+
+                        {/* Details Button */}
+                        <div className="col-span-5 md:col-span-1 flex justify-center md:justify-start">
                           {match.completed && (
                             <button
                               onClick={() => handleViewMatchDetails(match)}
-                              className="ml-4 btn btn-sm btn-outline flex items-center space-x-1"
+                              className="px-3 py-1.5 bg-gray-50 text-gray-700 border border-gray-300 rounded-lg hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center space-x-1.5"
                             >
                               <Eye className="h-4 w-4" />
-                              <span>Details</span>
+                              <span className="text-sm font-medium">Details</span>
                             </button>
                           )}
                         </div>

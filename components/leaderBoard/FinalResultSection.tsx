@@ -6,12 +6,14 @@ import { checkLengthTeam } from '../../utils/function'
 import trophy1 from '../../assets/trophy1.png'
 import trophy2 from '../../assets/trophy2.png'
 import trophy3 from '../../assets/trophy3.png'
+import { TournamentFormat } from '@/types/tournament'
 interface LeaderboardCardProps {
   leaderboardData: LeaderboardRecord | null
   loading: boolean
+  format: TournamentFormat
 }
 
-export function FinalResultSection({ leaderboardData, loading }: LeaderboardCardProps) {
+export function FinalResultSection({ leaderboardData, loading, format }: LeaderboardCardProps) {
   return (
     <Box
       className={styles['card-container']}
@@ -33,9 +35,9 @@ export function FinalResultSection({ leaderboardData, loading }: LeaderboardCard
         <Avatar className={styles['trophy-wrapper2']} src={trophy2.src} />
         {/* TEAM NAME */}
         {leaderboardData?.teamsTop2?.map((team) => (
-          <Typography key={team.teamId} className={styles['team-name2']}>
-            <Tooltip title={`${team.teamName}`} placement="left">
-              <span> {checkLengthTeam(team.teamName)}</span>
+          <Typography key={team?.teamId} className={styles['team-name2']}>
+            <Tooltip title={`${team?.teamName}`} placement="left">
+              <span> {checkLengthTeam(team?.teamName)}</span>
             </Tooltip>
           </Typography>
         ))}
@@ -56,10 +58,11 @@ export function FinalResultSection({ leaderboardData, loading }: LeaderboardCard
             <Typography className={styles['detail-value2']}>{leaderboardData?.teamsTop2[0]?.goalsAgainst}</Typography>
           </Box>
         </Box>
+        {format !== "GROUP_STAGE" && (
         <Box className={styles['point-container']}>
           <Typography className={styles['point-value2']}>{leaderboardData?.teamsTop2[0]?.score}</Typography>
           <Typography className={styles['point-label2']}>POINTS:</Typography>
-        </Box>
+        </Box>)}
       </Box>
       {/* CARD TOP 2 */}
       <Box
@@ -81,9 +84,9 @@ export function FinalResultSection({ leaderboardData, loading }: LeaderboardCard
         <Avatar className={styles['trophy-wrapper1']} src={trophy1.src} />
         {/* TEAM NAME */}
         {leaderboardData?.teamsTop1?.map((team) => (
-          <Typography key={team.teamId} className={styles['team-name1']}>
-            <Tooltip title={`${team.teamName}`} placement="left">
-              <span> {checkLengthTeam(team.teamName)}</span>
+          <Typography key={team?.teamId} className={styles['team-name1']}>
+            <Tooltip title={`${team?.teamName}`} placement="left">
+              <span> {checkLengthTeam(team?.teamName)}</span>
             </Tooltip>
           </Typography>
         ))}
@@ -104,10 +107,11 @@ export function FinalResultSection({ leaderboardData, loading }: LeaderboardCard
             <Typography className={styles['detail-value1']}>{leaderboardData?.teamsTop1[0]?.goalsAgainst}</Typography>
           </Box>
         </Box>
+        {format !== "GROUP_STAGE" && (
         <Box className={styles['point-container']}>
           <Typography className={styles['point-value1']}>{leaderboardData?.teamsTop1[0]?.score}</Typography>
           <Typography className={styles['point-label1']}>POINTS:</Typography>
-        </Box>
+        </Box>)}
       </Box>
       {/* CARD TOP 3 */}
       <Box
@@ -121,10 +125,10 @@ export function FinalResultSection({ leaderboardData, loading }: LeaderboardCard
         {/* TROPHY */}
         <Avatar className={styles['trophy-wrapper3']} src={trophy3.src} />
         {/* TEAM NAME */}
-        {leaderboardData?.teamsTop3?.map((team) => (
-          <Typography key={team.teamId} className={styles['team-name3']}>
-            <Tooltip title={`${team.teamName}`} placement="right">
-              <span> {checkLengthTeam(team.teamName)}</span>
+        {leaderboardData?.teamsTop3?.map((team) => (  
+          <Typography key={team?.teamId} className={styles['team-name3']}>
+            <Tooltip title={`${team?.teamName}`} placement="right">
+              <span> {checkLengthTeam(team?.teamName)}</span>
             </Tooltip>
           </Typography>
         ))}
@@ -145,10 +149,11 @@ export function FinalResultSection({ leaderboardData, loading }: LeaderboardCard
             <Typography className={styles['detail-value3']}>{leaderboardData?.teamsTop3[0]?.goalsAgainst}</Typography>
           </Box>
         </Box>
+        {format !== "GROUP_STAGE" && (
         <Box className={styles['point-container']}>
           <Typography className={styles['point-value3']}>{leaderboardData?.teamsTop3[0]?.score}</Typography>
           <Typography className={styles['point-label3']}>POINTS:</Typography>
-        </Box>
+        </Box>)}
       </Box>
     </Box>
   )
