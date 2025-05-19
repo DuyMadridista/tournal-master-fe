@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/dialog"
+import { toast } from "react-toastify"
 
 // Define tournament format types
 type TournamentFormat = "KNOCKOUT" | "GROUP_STAGE" | "LEAGUE"
@@ -46,7 +47,7 @@ interface Tournament {
   category: string
   startDate: Date
   endDate: Date
-  status: "READY" | "IN_PROGRESS" | "FINISHED" | "DISCARDED"
+  status: "READY" | "IN_PROGRESS" | "FINISHED" | "DISCARDED" | "NEED_INFORMATION"
   teamsCount: number
   matchesCount: number
   progress: number
@@ -78,12 +79,13 @@ const statusOptions = [
   { value: "IN_PROGRESS", label: "In Progress" },
   { value: "FINISHED", label: "Finished" },
   { value: "DISCARDED", label: "Discarded" },
+  { value: "NEED_INFORMATION", label: "Need Information" },
 ];
 
 function getStatusColor(status: Tournament['status'], isActive: boolean = false) {
   // Màu sắc cho filter (isActive) hoặc badge (mặc định)
   switch (status) {
-    case 'READY':
+    case 'NEED_INFORMATION':
       return isActive ? 'bg-primary-100 text-primary-700 border border-primary-200' : 'bg-primary-100 text-primary-800';
     case 'IN_PROGRESS':
       return isActive ? 'bg-success-100 text-success-700 border border-success-200' : 'bg-success-100 text-success-800';
@@ -91,6 +93,8 @@ function getStatusColor(status: Tournament['status'], isActive: boolean = false)
       return isActive ? 'bg-neutral-100 text-purple-700 border bg-purple-100 border-purple-200' : 'bg-neutral-100 text-neutral-800';
     case 'DISCARDED':
       return isActive ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-red-100 text-red-800';
+    case 'READY':
+      return isActive ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-green-100 text-green-800';
     default:
       return isActive ? 'bg-primary-100 text-primary-700 border border-primary-200' : 'bg-neutral-200 text-neutral-700';
   }
@@ -102,6 +106,7 @@ function getStatusLabel(status: Tournament['status']) {
     case 'IN_PROGRESS': return 'In Progress';
     case 'FINISHED': return 'Finished';
     case 'DISCARDED': return 'Discarded';
+    case 'NEED_INFORMATION': return 'Need Information';
     default: return status;
   }
 }
@@ -407,15 +412,27 @@ function getStatusLabel(status: Tournament['status']) {
     setStatusFilter(status)
   }
 
-  const handleDeleteTournament = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this tournament?")) {
-      try {
-        // Simulate API call
-        //await simulateFetch(null, 1000)
-        setTournaments(tournaments.filter((tournament) => tournament.id !== id))
-      } catch (error) {
-        console.error("Failed to delete tournament:", error)
-      }
+  // State for delete confirmation dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [tournamentToDelete, setTournamentToDelete] = useState<string | null>(null)
+
+  const openDeleteDialog = (id: string) => {
+    setTournamentToDelete(id)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteTournament = async () => {
+    if (!tournamentToDelete) return
+    
+    try {
+      setTournaments(tournaments.filter((tournament) => tournament.id !== tournamentToDelete))
+      await api.delete(`/tournament/${tournamentToDelete}`)
+      toast.success("Tournament deleted successfully")
+      setIsDeleteDialogOpen(false)
+      setTournamentToDelete(null)
+    } catch (error) {
+      console.error("Failed to delete tournament:", error)
+      toast.error("Failed to delete tournament")
     }
   }
 
@@ -775,7 +792,7 @@ function getStatusLabel(status: Tournament['status']) {
                   </Link>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleDeleteTournament(tournament.id)}
+                      onClick={() => openDeleteDialog(tournament.id)}
                       className="btn btn-outline text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center justify-center"
                     >
                       <Trash className="h-5 w-5" />
@@ -787,6 +804,32 @@ function getStatusLabel(status: Tournament['status']) {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-white rounded-xl shadow-lg border border-neutral-200">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-red-600">Confirm Deletion</DialogTitle>
+            <DialogDescription className="text-neutral-600">
+              Are you sure you want to delete this tournament? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6 flex gap-3 justify-end">
+            <button 
+              className="btn btn-outline px-5 py-2.5 text-sm font-medium"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="btn bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 text-sm font-medium"
+              onClick={handleDeleteTournament}
+            >
+              Delete Tournament
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

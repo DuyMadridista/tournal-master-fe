@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Clock, MapPin, AlertTriangle, RefreshCw } from "lucide-react"
+import { Clock, MapPin, AlertTriangle, RefreshCw, BarChart2 } from "lucide-react"
 import { DndContext, DragOverlay, closestCenter, useSensor, useSensors, PointerSensor } from "@dnd-kit/core"
 import { restrictToWindowEdges } from "@dnd-kit/modifiers"
 import { useDraggable, useDroppable } from "@dnd-kit/core"
@@ -9,6 +9,7 @@ import { toast } from "react-toastify"
 import api from "@/apis/api"
 import { useParams } from "next/navigation"
 import { Tournament } from "@/types/tournament"
+import ScheduleAnalyzer from "./ScheduleAnalyzer"
 
 
 interface Match {
@@ -28,7 +29,7 @@ interface Match {
   round?: string
   group?: string
   completed: boolean
-  matchDayId?: string
+  matchDayId: string
 }
 
 interface TimeSlot {
@@ -51,11 +52,12 @@ interface SlotScheduleViewProps {
 
 export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, eventDates, tournament, onAfterGenerate }: SlotScheduleViewProps) {
   const params = useParams()
-  console.log(tournament)
+
   const tournamentId = params?.id as string
   const [activeId, setActiveId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [showAnalysis, setShowAnalysis] = useState(false)
   const [planSettings, setPlanSettings] = useState({
     matchDuration: 60,
     timeBetweenMatches: 10,
@@ -117,6 +119,34 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
       [setting]: value,
     }))
   }
+  const handleMoveMatchSuggestion = async (
+    matchId: string,
+    suggestedDateId: string,
+    suggestedStartTime: string,
+    suggestedEndTime: string,
+  ) => {
+    try {
+      console.log(eventDates.flatMap(e => e.slots));
+      
+      const sameDateSlots = eventDates
+        .flatMap(e => e.slots)
+        .filter(s => s.eventDateId.toString() === suggestedDateId.toString() && s.matches === null);
+
+      const slot = sameDateSlots.find(s =>
+        s.startTime.toString() === suggestedStartTime.toString() &&
+        s.endTime.toString() === suggestedEndTime.toString()
+      ) || sameDateSlots[sameDateSlots.length - 1] || null;
+
+      if (!slot) {
+        toast.error("Cannot find a suitable slot to move the match");
+        return;
+      }
+      await onUpdateMatch(matchId, slot.id)
+    } catch (error) {
+      console.error("Failed to apply suggestion:", error)
+      toast.error("Failed to apply suggestion");
+    }
+  }
   const handleGenerateSchedule = async () => {
     // call api generate schedule
     setIsLoading(true)
@@ -139,6 +169,23 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   return (
+    <div className="space-y-6">{
+      matches.length > 0 && (
+        <div className="flex justify-end">
+        <button
+          className={`btn ${showAnalysis ? "btn-primary" : "btn-outline"} flex items-center space-x-2`}
+          onClick={() => setShowAnalysis(!showAnalysis)}
+        >
+          <BarChart2 className="h-5 w-5" />
+          <span>{showAnalysis ? "Hide analysis" : "Analysis schedule"}</span>
+        </button>
+      </div>
+      )
+    }
+     
+
+      {/* Schedule analysis section */}
+      {showAnalysis && <ScheduleAnalyzer matches={matches} onMoveMatchSuggestion={handleMoveMatchSuggestion} />}
     <div className={`flex flex-col lg:flex-row gap-6 ${isLoading ? "opacity-50" : ""}`}>
       <DndContext
         sensors={sensors}
@@ -288,7 +335,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
             disabled={isLoading || (tournament?.status !== "READY" && tournament?.status !== "NEED_INFORMATION")}
           >
             <RefreshCw className={`h-5 w-5 ${isLoading ? "animate-spin" : ""}`} />
-            {isLoading ? "Generating..." : "GENERATE"}
+            {isLoading ? "Generating..." : matches.length > 0 ? "Re-generate" : "Generate"}
           </button>
           {tournament?.status !== "READY" && tournament?.status !== "NEED_INFORMATION" && (
             <div className="bg-amber-50 border border-amber-200 rounded-md p-4 flex items-start gap-3">
@@ -300,6 +347,8 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
         </div>
       </div>
     </div>
+    </div>
+
   )
 }
 
@@ -309,7 +358,6 @@ function DraggableMatch({ match, tournament, date }: { match: Match, tournament?
     id: match.id,
     data: { match },
   });
-  console.log(match.group);
 
   const team1Name = match.teamOne?.teamName || "Tobe decided...";
   const team2Name = match.teamTwo?.teamName || "Tobe decided...";

@@ -81,7 +81,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   // Check if we're in a tournament context
   const isInTournamentContext = pathname.includes("/tournaments/") && tournamentId
+const isLanding = typeof window !== 'undefined' && window.location.pathname.startsWith('/landing')
 
+  if (isLanding) return <>{children}</>
   return (
     <div className={`min-h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <LoadingOverlay />

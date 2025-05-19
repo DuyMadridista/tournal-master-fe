@@ -38,43 +38,39 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <PageHeader title="Chào mừng đến với Tourna Master" description="Quản lý giải đấu bóng đá của bạn dễ dàng">
-        <Link href="/tournaments/create" className="btn btn-primary flex items-center space-x-2">
-          <Plus className="h-5 w-5" />
-          <span>Tạo giải đấu mới</span>
-        </Link>
+      <PageHeader title="Welcome to Tourna Master" description="Manage your football tournaments easily">
       </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <DashboardCard
-          title="Giải đấu đang diễn ra"
+          title="Running Tournaments"
           value="3"
           icon={Trophy}
           color="bg-primary-500"
-          change="+1 tháng này"
+          change="+1 this month"
           positive={true}
         />
         <DashboardCard
-          title="Tổng số đội"
+          title="Total Teams"
           value="48"
           icon={Users}
           color="bg-secondary-500"
-          change="+12 tháng này"
+          change="+12 this month"
           positive={true}
         />
         <DashboardCard
-          title="Trận đấu sắp tới"
+          title="Upcoming Matches"
           value="24"
           icon={Calendar}
           color="bg-accent-500"
-          change="Tiếp theo: Ngày mai"
+          change="Next: Tomorrow"
         />
         <DashboardCard
-          title="Trận đấu đã hoàn thành"
+          title="Completed Matches"
           value="36"
           icon={ListChecks}
           color="bg-success-500"
-          change="+8 tuần này"
+          change="+8 this week"
           positive={true}
         />
       </div>
@@ -92,41 +88,41 @@ export default function Dashboard() {
                 />
               </svg>
             </span>
-            Hoạt động gần đây
+            Recent Activities
           </h2>
           <div className="space-y-4">
             <ActivityItem
-              title="Giải đấu đã tạo"
-              description="Summer Football Championship 2023 đã được tạo"
-              time="2 giờ trước"
+              title="Tournament Created"
+              description="Summer Football Championship 2023 has been created"
+              time="2 hours ago"
               icon={Trophy}
               color="bg-primary-100 text-primary-700"
             />
             <ActivityItem
-              title="Đội đã thêm"
-              description="8 đội mới đã được thêm vào Summer Football Championship"
-              time="Hôm qua"
+              title="Teams Added"
+              description="8 new teams have been added to Summer Football Championship"
+              time="Yesterday"
               icon={Users}
               color="bg-secondary-100 text-secondary-700"
             />
             <ActivityItem
-              title="Lịch đã cập nhật"
-              description="Lịch thi đấu đã được cập nhật cho Winter League"
-              time="2 ngày trước"
+              title="Schedule Updated"
+              description="Match schedule has been updated for Winter League"
+              time="2 days ago"
               icon={Calendar}
               color="bg-accent-100 text-accent-700"
             />
             <ActivityItem
-              title="Kết quả đã ghi nhận"
-              description="Kết quả cho 12 trận đấu đã được ghi nhận"
-              time="3 ngày trước"
+              title="Results Recorded"
+              description="Results for 12 matches have been recorded"
+              time="3 days ago"
               icon={ListChecks}
               color="bg-success-100 text-success-700"
             />
           </div>
           <div className="mt-4 text-center">
             <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-              Xem tất cả hoạt động
+              View all activities
             </button>
           </div>
         </div>
@@ -136,7 +132,7 @@ export default function Dashboard() {
             <span className="p-1.5 bg-primary-100 rounded-md text-primary-600 mr-2">
               <Trophy className="h-5 w-5" />
             </span>
-            Giải đấu của bạn
+            Your Tournaments
           </h2>
           <div className="space-y-3">
             <TournamentItem
@@ -152,7 +148,7 @@ export default function Dashboard() {
           <div className="mt-6">
             <Link href="/tournaments" className="w-full btn btn-primary flex items-center justify-center space-x-2">
               <Layout className="h-5 w-5" />
-              <span>Quản lý tất cả giải đấu</span>
+              <span>Manage all tournaments</span>
             </Link>
           </div>
         </div>
@@ -160,22 +156,22 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <QuickAccessCard
-          title="Quản lý đội tham gia"
-          description="Thêm, chỉnh sửa hoặc xóa đội và cầu thủ"
+          title="Team Management"
+          description="Add, edit or delete teams and players"
           icon={Users}
           href="/participants"
           color="bg-secondary-500"
         />
         <QuickAccessCard
-          title="Lịch thi đấu"
-          description="Tạo và quản lý lịch thi đấu của giải đấu"
+          title="Match Schedule"
+          description="Create and manage tournament match schedules"
           icon={Calendar}
           href="/schedule"
           color="bg-accent-500"
         />
         <QuickAccessCard
-          title="Kết quả & Bảng xếp hạng"
-          description="Xem kết quả trận đấu và bảng xếp hạng giải đấu"
+          title="Results & Leaderboard"
+          description="View match results and tournament leaderboard"
           icon={BarChart3}
           href="/leaderboard"
           color="bg-success-500"
@@ -264,14 +260,14 @@ function TournamentItem({ title, status, progress, href }: TournamentItemProps) 
       <div className="flex justify-between items-start mb-2">
         <h4 className="text-sm font-medium text-neutral-800">{title}</h4>
         <span className={`text-xs px-2 py-1 rounded-full ${statusColors[status]}`}>
-          {status === "Active" ? "Đang diễn ra" : status === "Completed" ? "Đã kết thúc" : "Sắp diễn ra"}
+          {status === "Active" ? "In Progress" : status === "Completed" ? "Completed" : "Upcoming"}
         </span>
       </div>
       <div className="w-full bg-neutral-200 rounded-full h-2 mb-1">
         <div className="bg-primary-500 h-2 rounded-full" style={{ width: `${progress}%` }}></div>
       </div>
       <div className="flex justify-between items-center">
-        <span className="text-xs text-neutral-500">{progress}% hoàn thành</span>
+        <span className="text-xs text-neutral-500">{progress}% completed</span>
         <ArrowRight className="h-4 w-4 text-primary-500" />
       </div>
     </Link>
@@ -298,7 +294,7 @@ function QuickAccessCard({ title, description, icon: Icon, href, color }: QuickA
       <h3 className="text-lg font-bold text-neutral-800 mb-2">{title}</h3>
       <p className="text-sm text-neutral-600 mb-4">{description}</p>
       <div className="flex items-center text-primary-600 font-medium">
-        <span>Bắt đầu</span>
+        <span>Get Started</span>
         <ArrowRight className="h-4 w-4 ml-2" />
       </div>
     </Link>
