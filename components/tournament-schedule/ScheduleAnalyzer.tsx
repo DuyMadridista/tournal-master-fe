@@ -16,6 +16,9 @@ import {
   Zap,
   ChevronRight,
 } from "lucide-react"
+import { toast } from "react-toastify"
+import { Tournament } from "@/types/tournament"
+import Link from "next/link"
 
 interface Team {
   teamId: string
@@ -67,15 +70,15 @@ interface ScheduleAnalyzerProps {
     suggestedStartTime: string,
     suggestedEndTime: string,
   ) => void
+  tournament: Tournament | null
 }
 
-export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: ScheduleAnalyzerProps) {
+export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion, tournament }: ScheduleAnalyzerProps) {
   const [analysis, setAnalysis] = useState<ScheduleAnalysisResult | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [expandedIssue, setExpandedIssue] = useState<number | null>(null)
   const [showAllIssues, setShowAllIssues] = useState(false)
   const [activeTab, setActiveTab] = useState<"overview" | "issues" | "suggestions">("overview")
-
   // Analyze schedule when matches change
   useEffect(() => {
     analyzeSchedule()
@@ -99,10 +102,16 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
 
   const performScheduleAnalysis = (matches: Match[]): ScheduleAnalysisResult => {
     const issues: ScheduleIssue[] = []
+    console.log("fkjahssak");
+    console.log(matches);
 
+    
+    
     // Group matches by date
     const matchesByDate = groupMatchesByDate(matches)
-
+    const numberOfDays = Object.keys(matchesByDate).length;
+    console.log(numberOfDays);
+    
     // Group matches by team
     const matchesByTeam = groupMatchesByTeam(matches)
 
@@ -195,7 +204,7 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
           dateStr,
         )
   
-        const severity = teamMatches.length > 2 ? 'high' : 'medium'
+        let severity : "high" | "medium" | "low" = 'high' 
         const description = `${team.teamName} has ${
           teamMatches.length
         } matches on ${new Date(teamMatches[0].date).toLocaleDateString(
@@ -207,6 +216,7 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
   
         if (suggestion) {
           const { match, newDateStr } = suggestion
+         severity = teamMatches.length > 2 ? 'high' : 'medium'
           recommendation = `Move match ${match.teamOne.teamName} vs ${match.teamTwo.teamName} to ${new Date(
             matchesByDate[newDateStr][0].date,
           ).toLocaleDateString('vi-VN')}`
@@ -413,6 +423,7 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
 
     // For team overload issues, suggest moving a match to another day
     if (issue.type === "team_overload" && issue.affectedMatches.length > 0) {
+      
       const matchesByDate = groupMatchesByDate(matches);
       const suggestion = findBestMatchToMove(issue.affectedMatches, matchesByDate, issue.affectedMatches[0].date.toISOString().split("T")[0]);
     
@@ -421,6 +432,7 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
         onMoveMatchSuggestion(match.id, newDateStr, match.startTime, match.endTime);
       } else {
         console.warn("Could not find a suitable match to move without causing conflicts");
+        toast.error("Could not find a suitable match to move without causing conflicts");
       }
     }
 
@@ -685,8 +697,17 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
                               className="ml-4 px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 flex items-center"
                             >
                               <Zap className="h-4 w-4 mr-1" />
-                              Sửa ngay
+                              Fix now
                             </button>
+                          )}
+                          {issue.recommendation === "Consider adding more match days to redistribute matches" && (
+                            <Link
+                              href={`/tournaments/${tournament?.id}/details`}
+                              className="ml-4 px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 flex items-center"
+                            >
+                              <Zap className="h-4 w-4 mr-1" />
+                              Add more match days
+                            </Link>
                           )}
                         </div>
                       ))}
@@ -699,7 +720,7 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
                           setShowAllIssues(true)
                         }}
                       >
-                        Xem tất cả {getHighPriorityIssues().length} vấn đề nghiêm trọng
+                         View all {getHighPriorityIssues().length} serious issues 
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </button>
                     )}
@@ -827,12 +848,19 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
                             </ul>
                           </div>
 
-                          <div className="mb-4">
-                            <h5 className="font-medium mb-1">Recommendation:</h5>
-                            <p>{issue.recommendation}</p>
+                          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg flex justify-between" >
+                        <div className="flex items-start">
+                          {/* <div> */}
+                          <Zap className="h-5 w-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h6 className="font-medium text-blue-800 mb-1">Recommendation:</h6>
+                            <p className="text-blue-700">{issue.recommendation}</p>
                           </div>
-
-                          {issue.actionable && (
+                          {/* </div> */}
+                          
+                         
+                        </div>
+                        {issue.actionable ? (
                             <button
                               className="btn btn-sm bg-red-100 text-red-700 hover:bg-red-200 flex items-center border-0"
                               onClick={() => handleApplySuggestion(issue)}
@@ -840,7 +868,18 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
                               <Zap className="h-4 w-4 mr-1" />
                               Apply
                             </button>
-                          )}
+                          ) :(
+                            <Link
+                              href={`/tournaments/${tournament?.id}/details`}
+                              className="ml-4 px-2 py-0.5 bg-green-200 text-green-700 rounded-md hover:bg-green-200 flex items-center"
+                            >
+                              <Zap className="h-4 w-4 mr-1" />
+                              Add more match days
+                            </Link>
+                          ) }
+                      </div>
+
+                          
                         </div>
                       )}
                     </div>
@@ -893,10 +932,15 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
                             </ul>
                           </div>
 
-                          <div className="mb-4">
-                            <h5 className="font-medium mb-1">Recommendation:</h5>
-                            <p>{issue.recommendation}</p>
+                          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start">
+                          <Zap className="h-5 w-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h6 className="font-medium text-blue-800 mb-1">Recommendation:</h6>
+                            <p className="text-blue-700">{issue.recommendation}</p>
                           </div>
+                        </div>
+                      </div>
 
                           {issue.actionable && (
                             <button
@@ -964,10 +1008,15 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion }: Sch
                             </ul>
                           </div>
 
-                          <div className="mb-4">
-                            <h5 className="font-medium mb-1">Recommendation:</h5>
-                            <p>{issue.recommendation}</p>
+                          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start">
+                          <Zap className="h-5 w-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h6 className="font-medium text-blue-800 mb-1">Recommendation:</h6>
+                            <p className="text-blue-700">{issue.recommendation}</p>
                           </div>
+                        </div>
+                      </div>
 
                           {issue.actionable && (
                             <button

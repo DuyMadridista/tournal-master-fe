@@ -148,20 +148,43 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
     }
   }
   const handleGenerateSchedule = async () => {
-    // call api generate schedule
-    setIsLoading(true)
-    const res = await api.post(`/generate/${tournamentId}`, {
-      duration: planSettings.matchDuration,
-      betweenTime: planSettings.timeBetweenMatches,
-      startTime: planSettings.startTime,
-      endTime: planSettings.endTime,
-    })
-
-    if (res.data?.success && onAfterGenerate) {
-      onAfterGenerate()
+    setIsLoading(true);
+  
+    try {
+      const res = await api.post(`/generate/${tournamentId}`, {
+        duration: planSettings.matchDuration,
+        betweenTime: planSettings.timeBetweenMatches,
+        startTime: planSettings.startTime,
+        endTime: planSettings.endTime,
+      });
+      console.log(res.data);
+      
+      if (res.data?.success && onAfterGenerate) {
+        onAfterGenerate();
+      } else {
+        // API trả về 200 nhưng success = false
+        toast.error(res.data?.message || 'Error generating schedule');
+      }
+    } catch (error: any) {
+      const status = error.response?.status;
+      const apiMessage = error.response?.data?.message;
+  
+      if (status === 400 && apiMessage) {
+        // Trường hợp 400: hiển thị message từ API
+        toast.error(apiMessage);
+      } else {
+        // Các trường hợp lỗi khác hoặc không có message
+        toast.error(
+          apiMessage ||
+          error.message ||
+          'Error generating schedule'
+        );
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false)
-  }
+  };
+  
 
   // Filter eventDates based on dateFilter
   const filteredEventDates = eventDates
@@ -185,7 +208,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
      
 
       {/* Schedule analysis section */}
-      {showAnalysis && <ScheduleAnalyzer matches={matches} onMoveMatchSuggestion={handleMoveMatchSuggestion} />}
+      {showAnalysis && <ScheduleAnalyzer matches={matches} onMoveMatchSuggestion={handleMoveMatchSuggestion} tournament = {tournament} />}
     <div className={`flex flex-col lg:flex-row gap-6 ${isLoading ? "opacity-50" : ""}`}>
       <DndContext
         sensors={sensors}
