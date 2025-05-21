@@ -3,21 +3,91 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Trophy, Users, Calendar, ListChecks, BarChart3, ArrowRight, Plus, Layout } from "lucide-react"
+import { Trophy, Users, Calendar, ListChecks, BarChart3, ArrowRight, Plus, Layout, Activity, UserPlus } from "lucide-react"
 import Link from "next/link"
 import { useDataFetching } from "../context/DataFetchingContext"
 import LoadingSpinner from "../components/ui-elements/LoadingSpinner"
 import PageHeader from "../components/ui-elements/PageHeader"
+import api from '../apis/api'
+import { getLocalStorage } from '../utils/localStorage'
+
+// Define tournament type
+interface Tournament {
+  id: string
+  title: string
+  category: string
+  status: string
+  numberOfTeams: number
+  numberOfMatches: number
+  progress: number
+  startDate?: Date
+  endDate?: Date
+}
+
+// Helper function to get status label
+function getStatusLabel(status: string): "Active" | "Completed" | "Upcoming" {
+  switch (status) {
+    case 'READY':
+    case 'IN_PROGRESS':
+    case 'NEED_INFORMATION':
+      return 'Active'
+    case 'FINISHED':
+      return 'Completed'
+    case 'DISCARDED':
+    default:
+      return 'Upcoming'
+  }
+}
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
+  const [tournaments, setTournaments] = useState<Tournament[]>([])
   const { simulateFetch } = useDataFetching()
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Simulate API call
-        await simulateFetch(null, 1500)
+        // Load dashboard stats
+        await simulateFetch(null, 1000)
+        
+        // Load tournaments
+        const token = getLocalStorage('token')
+        if (!token) { return }
+          
+        const res = await api.get('/tournament?page=1', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        
+        // Map API data to Tournament[]
+        const apiData = res.data.data as any[]
+        const mapped: Tournament[] = apiData.map((item) => {
+          const status = item.status
+          let startDate = undefined, endDate = undefined
+          
+          if (Array.isArray(item.eventDates) && item.eventDates.length > 0) {
+            const dates = item.eventDates.map((d: any) => new Date(d.date))
+            startDate = new Date(Math.min(...dates.map((d: any) => d.getTime())))
+            endDate = new Date(Math.max(...dates.map((d: any) => d.getTime())))
+          } else {
+            startDate = endDate = new Date(item.createdAt)
+          }
+          
+          return {
+            id: item.id.toString(),
+            title: item.title,
+            category: item.category?.categoryName || '',
+            status,
+            startDate,
+            endDate,
+            numberOfTeams: item.numberOfTeams || 0,
+            numberOfMatches: item.numberOfMatches || 0,
+            progress: item.progress || 0,
+          }
+        })
+        
+        setTournaments(mapped)
       } catch (error) {
         console.error("Failed to load dashboard data:", error)
       } finally {
@@ -43,34 +113,34 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <DashboardCard
-          title="Running Tournaments"
-          value="3"
+          title="Active Tournaments"
+          value={tournaments.filter(t => ['READY', 'IN_PROGRESS', 'NEED_INFORMATION'].includes(t.status)).length.toString()}
           icon={Trophy}
           color="bg-primary-500"
-          change="+1 this month"
-          positive={true}
+          change={tournaments.length > 0 ? `${tournaments.length} total` : "No tournaments"}
+          positive={tournaments.length > 0}
         />
         <DashboardCard
           title="Total Teams"
-          value="48"
+          value={tournaments.reduce((sum, t) => sum + t.numberOfTeams, 0).toString()}
           icon={Users}
           color="bg-secondary-500"
-          change="+12 this month"
+          change="Across all tournaments"
           positive={true}
         />
         <DashboardCard
-          title="Upcoming Matches"
-          value="24"
+          title="Total Matches"
+          value={tournaments.reduce((sum, t) => sum + t.numberOfMatches, 0).toString()}
           icon={Calendar}
           color="bg-accent-500"
-          change="Next: Tomorrow"
+          change="Scheduled matches"
         />
         <DashboardCard
-          title="Completed Matches"
-          value="36"
+          title="Completed Tournaments"
+          value={tournaments.filter(t => t.status === 'FINISHED').length.toString()}
           icon={ListChecks}
           color="bg-success-500"
-          change="+8 this week"
+          change={tournaments.filter(t => t.progress === 100).length > 0 ? "100% complete" : "In progress"}
           positive={true}
         />
       </div>
@@ -79,46 +149,71 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-xl shadow-card border border-neutral-200 p-6">
           <h2 className="text-xl font-bold text-neutral-800 mb-4 flex items-center">
             <span className="p-1.5 bg-primary-100 rounded-md text-primary-600 mr-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path
-                  fillRule="evenodd"
-                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Activity className="h-5 w-5" />
             </span>
-            Recent Activities
+            Recent Activity
           </h2>
           <div className="space-y-4">
-            <ActivityItem
-              title="Tournament Created"
-              description="Summer Football Championship 2023 has been created"
-              time="2 hours ago"
-              icon={Trophy}
-              color="bg-primary-100 text-primary-700"
-            />
-            <ActivityItem
-              title="Teams Added"
-              description="8 new teams have been added to Summer Football Championship"
-              time="Yesterday"
-              icon={Users}
-              color="bg-secondary-100 text-secondary-700"
-            />
-            <ActivityItem
-              title="Schedule Updated"
-              description="Match schedule has been updated for Winter League"
-              time="2 days ago"
-              icon={Calendar}
-              color="bg-accent-100 text-accent-700"
-            />
-            <ActivityItem
-              title="Results Recorded"
-              description="Results for 12 matches have been recorded"
-              time="3 days ago"
-              icon={ListChecks}
-              color="bg-success-100 text-success-700"
-            />
+            {tournaments.length === 0 ? (
+              <p className="text-neutral-500 text-center py-4">No recent activity</p>
+            ) : (
+              // Generate activity items based on tournament data
+              tournaments.slice(0, 4).map((tournament, index) => {
+                // Determine activity type based on tournament status
+                let description = "Tournament created"
+                let icon = Calendar
+                let color = "bg-primary-100 text-primary-600"
+                let time = "Recently"
+                
+                // Calculate relative time
+                const now = new Date()
+                const createdDate = tournament.startDate || now
+                const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
+                
+                if (diffDays === 0) {
+                  time = "Today"
+                } else if (diffDays === 1) {
+                  time = "Yesterday"
+                } else if (diffDays < 7) {
+                  time = `${diffDays} days ago`
+                } else if (diffDays < 30) {
+                  time = `${Math.floor(diffDays / 7)} weeks ago`
+                } else {
+                  time = `${Math.floor(diffDays / 30)} months ago`
+                }
+                
+                // Determine activity type based on status and progress
+                if (tournament.status === 'FINISHED') {
+                  description = "Tournament completed"
+                  icon = Trophy
+                  color = "bg-success-100 text-success-600"
+                } else if (tournament.status === 'IN_PROGRESS') {
+                  description = "Match results updated"
+                  icon = ListChecks
+                  color = "bg-accent-100 text-accent-600"
+                }
+                else if (tournament.numberOfMatches > 0) {
+                  description = "Match schedule updated"
+                  icon = Calendar
+                  color = "bg-primary-100 text-primary-600"
+                } else if (tournament.numberOfTeams > 0) {
+                  description = `${tournament.numberOfTeams} teams registered`
+                  icon = UserPlus
+                  color = "bg-secondary-100 text-secondary-600"
+                } 
+                
+                return (
+                  <ActivityItem
+                    key={tournament.id}
+                    title={tournament.title}
+                    description={description}
+                    time={time}
+                    icon={icon}
+                    color={color}
+                  />
+                )
+              })
+            )}
           </div>
           <div className="mt-4 text-center">
             <button className="text-primary-600 hover:text-primary-700 text-sm font-medium">
@@ -135,15 +230,20 @@ export default function Dashboard() {
             Your Tournaments
           </h2>
           <div className="space-y-3">
-            <TournamentItem
-              title="Summer Football Championship 2023"
-              status="Active"
-              progress={45}
-              href="/tournaments/tour-1"
-            />
-            <TournamentItem title="Winter League 2023" status="Active" progress={78} href="/tournaments/tour-2" />
-            <TournamentItem title="Spring Cup 2023" status="Active" progress={12} href="/tournaments/tour-3" />
-            <TournamentItem title="Fall Tournament 2022" status="Completed" progress={100} href="/tournaments/tour-4" />
+            {tournaments.length === 0 ? (
+              <p className="text-neutral-500 text-center py-4">No tournaments found</p>
+            ) : (
+              // Display up to 4 tournaments
+              tournaments.slice(0, 4).map((tournament) => (
+                <TournamentItem
+                  key={tournament.id}
+                  title={tournament.title}
+                  status={getStatusLabel(tournament.status)}
+                  progress={tournament.progress || 0}
+                  href={`/tournaments/${tournament.id}`}
+                />
+              ))
+            )}
           </div>
           <div className="mt-6">
             <Link href="/tournaments" className="w-full btn btn-primary flex items-center justify-center space-x-2">

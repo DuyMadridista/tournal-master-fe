@@ -31,6 +31,7 @@ interface Match {
   group?: string
   completed: boolean
   matchDayId?: string
+  type?: string
 }
 
 export default function TournamentSchedulePage() {
@@ -71,6 +72,8 @@ export default function TournamentSchedulePage() {
 
   const mapEventDatesToMatches = (eventDates: any) => {
     const matches: Match[] = []
+
+    
     eventDates.forEach((eventDate: any) => {
           eventDate.slots.forEach((slot: any) => {
             if (slot.matches) {
@@ -92,6 +95,7 @@ export default function TournamentSchedulePage() {
                 group: slot.matches.group ?? undefined,
                 completed: new Date() > new Date(eventDate.date), 
                 matchDayId: String(eventDate.eventDateId),
+                type: slot.matches.type ?? "",
               })
             }
           })

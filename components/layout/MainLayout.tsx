@@ -42,9 +42,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }, [])
 
   const handleLogout = () => {
-    removeLocalStorage('token');
-    removeLocalStorage('user');
-    router.push('/login');
+    // Use the new auth cookie system for logout
+    import('../../utils/authCookies').then(({ clearAuthData }) => {
+      clearAuthData();
+      router.push('/landing');
+    });
   }
 
   // Handle scroll events to add shadow to header when scrolled
@@ -81,7 +83,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   // Check if we're in a tournament context
   const isInTournamentContext = pathname.includes("/tournaments/") && tournamentId
-const isLanding = typeof window !== 'undefined' && window.location.pathname.startsWith('/landing')
+  
+  // Initialize isLanding state
+  const [isLanding, setIsLanding] = useState(false)
+  
+  // Check if we're on landing or signup page, but only on the client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsLanding(
+        window.location.pathname.startsWith('/landing') || 
+        window.location.pathname.startsWith('/signup')
+      )
+    }
+  }, [pathname])
 
   if (isLanding) return <>{children}</>
   return (

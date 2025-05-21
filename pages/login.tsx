@@ -11,6 +11,7 @@ export interface LoginForm {
 }
 
 import * as Yup from 'yup'
+import Link from 'next/link'
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -22,24 +23,30 @@ const Login: React.FC = () => {
   const router = useRouter()
   const [error, setError] = useState(false)
   const handleSubmitForm = async (values: LoginForm, { resetForm }: { resetForm: () => void }) => {
-  setError(false);
-  try {
-    const res = await api.post('/auth/login', values);
+    setError(false);
+    try {
+      const res = await api.post('/auth/login', values);
     const result = res.data.data
-    console.log(result);
-    if (result && result.access_token) {
-      setLocalStorage('token', result.access_token);
-      setLocalStorage('user', JSON.stringify(result.user));
-      router.replace('/');
-    } else {
+      if (result && result.access_token) {
+        try {
+          // Import from authCookies instead of directly using localStorage
+          const { setAuthToken, setUserData } = await import('../utils/authCookies');
+          setAuthToken(result.access_token);
+          setUserData(result.user);
+          router.replace('/');
+        } catch (cookieError) {
+          console.error('Error setting auth cookies:', cookieError);
+          setError(true);
+        }
+      } else {
       setError(true);
     }
   } catch (e) {
     setError(true);
   }
-  resetForm();
-  setShowPassword(false);
-}
+      resetForm();
+      setShowPassword(false);
+  }
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword((showPassword) => !showPassword)
@@ -181,6 +188,12 @@ const Login: React.FC = () => {
               >
                 LOGIN
               </Button>
+              <div style={{ textAlign: 'center', fontSize: '0.875rem', color: '#718096', marginTop: '1rem' }}>
+                Don't have an account?{" "}
+                <Link href="/signup" style={{ color: '#3182ce', fontWeight: 500 }} onMouseOver={(e) => e.currentTarget.style.color = '#2c5282'} onMouseOut={(e) => e.currentTarget.style.color = '#3182ce'}>
+                  Sign Up
+                </Link>
+              </div>
             </Form>
           )}
         </Formik>

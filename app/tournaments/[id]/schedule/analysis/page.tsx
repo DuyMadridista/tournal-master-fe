@@ -243,8 +243,8 @@ export default function ScheduleAnalysisPage() {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Lưu ý quan trọng</AlertTitle>
                 <AlertDescription>
-                  Công cụ phân tích lịch thi đấu giúp phát hiện và sửa các vấn đề tiềm ẩn. Vui lòng xem xét kỹ các đề
-                  xuất trước khi áp dụng.
+                  The schedule analysis tool helps identify and fix potential issues. Please carefully consider the
+                  recommendations before applying them.
                 </AlertDescription>
               </Alert>
 
@@ -253,7 +253,7 @@ export default function ScheduleAnalysisPage() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center">
                       <Calendar className="h-4 w-4 mr-2" />
-                      Tổng quan lịch thi đấu
+                      Overview
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

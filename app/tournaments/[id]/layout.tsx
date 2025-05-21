@@ -55,32 +55,32 @@ export default function TournamentLayout({ children }: { children: React.ReactNo
   const navItems = [
     {
       href: `/tournaments/${tournamentId}`,
-      label: "Tổng quan",
+      label: "Overview",
       icon: Trophy,
     },
     {
       href: `/tournaments/${tournamentId}/details`,
-      label: "Chi tiết",
+      label: "Details",
       icon: Settings,
     },
     {
       href: `/tournaments/${tournamentId}/participants`,
-      label: "Đội tham gia",
+      label: "Participants",
       icon: Users,
     },
     {
       href: `/tournaments/${tournamentId}/schedule`,
-      label: "Lịch thi đấu",
+      label: "Schedule",
       icon: Calendar,
     },
     {
       href: `/tournaments/${tournamentId}/results`,
-      label: "Kết quả",
+      label: "Results",
       icon: ListChecks,
     },
     {
       href: `/tournaments/${tournamentId}/leaderboard`,
-      label: "Bảng xếp hạng",
+      label: "Leaderboard",
       icon: BarChart3,
     },
   ]
@@ -97,10 +97,10 @@ export default function TournamentLayout({ children }: { children: React.ReactNo
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-card border border-neutral-200 p-8 text-center">
-          <h3 className="text-lg font-medium text-neutral-800 mb-2">Không tìm thấy giải đấu</h3>
-          <p className="text-neutral-600 mb-6">Giải đấu bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+          <h3 className="text-lg font-medium text-neutral-800 mb-2">Tournament not found</h3>
+          <p className="text-neutral-600 mb-6">The tournament you are looking for does not exist or has been deleted.</p>
           <Link href="/tournaments" className="btn btn-primary">
-            Quay lại danh sách giải đấu
+            Back to Tournament List
           </Link>
         </div>
       </div>

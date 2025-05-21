@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 interface DualSidebarProps {
   isMobile?: boolean
@@ -30,10 +31,17 @@ interface DualSidebarProps {
 export default function DualSidebar({ isMobile = false }: DualSidebarProps) {
   const pathname = usePathname()
   const params = useParams()
-  const tournamentId = params.id as string
+    const router = useRouter();
+  const tournamentId = params?.id as string
   const [collapsed, setCollapsed] = useState(false)
   const [tournamentSidebarOpen, setTournamentSidebarOpen] = useState(true)
-
+  const handleLogout = () => {
+    // Use the new auth cookie system for logout
+    import('../../utils/authCookies').then(({ clearAuthData }) => {
+      clearAuthData();
+      router.push('/landing');
+    });
+  }
   // Reset collapsed state when switching between mobile and desktop
   useEffect(() => {
     setCollapsed(isMobile)
@@ -172,6 +180,7 @@ export default function DualSidebar({ isMobile = false }: DualSidebarProps) {
               className={cn(
                 "flex items-center space-x-3 w-full px-3 py-2 rounded-md text-red-600 hover:bg-red-50 transition-colors",
               )}
+              onClick={handleLogout}
             >
               <LogOut className="h-5 w-5 flex-shrink-0" />
               {!collapsed && <span>Logout</span>}

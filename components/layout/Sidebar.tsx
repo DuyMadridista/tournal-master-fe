@@ -165,7 +165,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
                 )}
               >
                 <HelpCircle className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && <span>Trợ giúp</span>}
+                {!collapsed && <span>Help</span>}
               </Link>
             </li>
           </ul>
@@ -178,14 +178,14 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
             <div className="p-2 bg-primary-100 rounded-full">
               <Bell className="h-4 w-4 text-primary-600" />
             </div>
-            <h4 className="font-medium text-primary-700">Mẹo</h4>
+            <h4 className="font-medium text-primary-700">Tip</h4>
           </div>
           <p className="text-xs text-primary-700">
-            Sử dụng phím tắt để điều hướng nhanh hơn. Nhấn{" "}
+            Press{" "}
             <kbd className="px-1.5 py-0.5 bg-white rounded border border-primary-200 text-primary-700 font-mono text-xs">
               ?
             </kbd>{" "}
-            để xem tất cả phím tắt.
+            to see all shortcuts.
           </p>
         </div>
       )}
@@ -197,7 +197,7 @@ export default function Sidebar({ isMobile = false }: SidebarProps) {
           )}
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span>Đăng xuất</span>}
+          {!collapsed && <span>Logout</span>}
         </button>
       </div>
     </aside>

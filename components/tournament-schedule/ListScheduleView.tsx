@@ -31,7 +31,7 @@ interface ListScheduleViewProps {
 }
 
 export default function ListScheduleView({ matches, onUpdateMatch, tournament }: ListScheduleViewProps) {
-  console.log(tournament);
+
 
   const [sortField, setSortField] = useState<"date" | "group" | "round">("date")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")

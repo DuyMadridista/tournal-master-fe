@@ -102,15 +102,12 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion, tourn
 
   const performScheduleAnalysis = (matches: Match[]): ScheduleAnalysisResult => {
     const issues: ScheduleIssue[] = []
-    console.log("fkjahssak");
-    console.log(matches);
+
 
     
     
     // Group matches by date
     const matchesByDate = groupMatchesByDate(matches)
-    const numberOfDays = Object.keys(matchesByDate).length;
-    console.log(numberOfDays);
     
     // Group matches by team
     const matchesByTeam = groupMatchesByTeam(matches)
@@ -417,7 +414,7 @@ export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion, tourn
   }
 
   const handleApplySuggestion = (issue: ScheduleIssue) => {
-    console.log(issue);
+
     
     if (!issue.actionable) return
 

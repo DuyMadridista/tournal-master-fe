@@ -94,7 +94,6 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
       )
       // Map API data to Team[]
       const apiData = res.data.data as ApiTeam[]
-      console.log(res.data.additionalData)
       const mapped: Team[] = apiData.map((item) => ({
         id: String(item.teamId),
         name: item.teamName,

@@ -30,6 +30,7 @@ interface Match {
   group?: string
   completed: boolean
   matchDayId: string
+  type: string
 }
 
 interface TimeSlot {
@@ -75,7 +76,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
     }),
   )
 
-  const activeMatch = matches.find((match) => match.id === activeId) || null
+  const activeMatch = matches.find((match) => match.id === activeId) || null 
   const handleDragStart = (event: any) => {
     setActiveId(event.active.id.toString())
     setIsDragging(true)
@@ -104,7 +105,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
         try {
           await onUpdateMatch(match.id, slot.id)
         } catch (error) {
-          console.error("Failed to update match date:", error);
+          toast.error("Failed to update match date");
         }
       }
       else {
@@ -126,7 +127,6 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
     suggestedEndTime: string,
   ) => {
     try {
-      console.log(eventDates.flatMap(e => e.slots));
       
       const sameDateSlots = eventDates
         .flatMap(e => e.slots)
@@ -143,7 +143,6 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
       }
       await onUpdateMatch(matchId, slot.id)
     } catch (error) {
-      console.error("Failed to apply suggestion:", error)
       toast.error("Failed to apply suggestion");
     }
   }
@@ -157,8 +156,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
         startTime: planSettings.startTime,
         endTime: planSettings.endTime,
       });
-      console.log(res.data);
-      
+
       if (res.data?.success && onAfterGenerate) {
         onAfterGenerate();
       } else {
@@ -258,9 +256,14 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
                   </span>
                 </div>
 
-                {activeMatch.group && (
+                {activeMatch.type === "GROUP" && activeMatch.group && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                     Group {activeMatch.group}
+                  </span>
+                )}
+                {activeMatch.type === "KNOCKOUT" && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Knockout
                   </span>
                 )}
               </div>
@@ -377,6 +380,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
 
 // Component for a match that can be dragged
 function DraggableMatch({ match, tournament, date }: { match: Match, tournament?: Tournament, date: Date }) {
+  
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: match.id,
     data: { match },
@@ -395,9 +399,12 @@ function DraggableMatch({ match, tournament, date }: { match: Match, tournament?
         opacity: isDragging ? 0.5 : 1,
       }}
     >
-      {match.group && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+      { match.type === "GROUP" && match.group &&<div className="flex items-center justify-center"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
         Group {match.group}
-      </span>}
+      </span></div>}
+      { match.type === "KNOCKOUT" &&<div className="flex items-center justify-center"><span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+       Knockout
+      </span></div>}
       <div className="flex items-center justify-center">
         <div className="flex-1 text-right">
           <span className="text-lg font-medium">{team1Name}</span>

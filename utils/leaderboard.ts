@@ -2,7 +2,6 @@ import { LeaderboardRecord } from '../types/leaderboard'
 
 export const convertLeaderboardRecord = (original: LeaderboardRecord): LeaderboardRecord => {
 
-  console.log(original)
   if (original.leaderBoard?.length !== 0 && original.leaderBoard?.[0]?.score !== 0) {
     original.started = true
   } else {
@@ -60,7 +59,7 @@ export const convertLeaderboardRecord = (original: LeaderboardRecord): Leaderboa
   }
 }
 export const convertGroupStageLeaderboardRecord = (original: any): LeaderboardRecord => {
-  console.log(original)
+
   for (const team of original.leaderBoard) {
     const matchList = []
     for (const match of original.matches) {

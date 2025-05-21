@@ -1,10 +1,92 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Save, User, Lock, Bell, Globe, Shield, HelpCircle } from "lucide-react"
+import { getUserData } from "../../utils/authCookies"
+import api from "../../apis/api"
+import { toast } from "react-toastify"
+
+// Định nghĩa kiểu dữ liệu cho thông tin người dùng
+interface UserData {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  dateOfBirth?: string;
+  bio?: string;
+}
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile")
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [formData, setFormData] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    bio: string;
+  }>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    bio: "",
+  })
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = getUserData();
+        if (user) {
+          setUserData(user);
+          setFormData({
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
+            email: user.email || "",
+            phoneNumber: user.phoneNumber || "",
+            bio: user.bio || "",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast.error("Could not load user data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  // Hàm xử lý khi người dùng lưu thay đổi
+  const handleSaveChanges = async () => {
+    try {
+      if (!userData) return;
+      
+      // Gọi API để cập nhật thông tin người dùng
+      const response = await api.put(`/organizer/${userData.id}`, formData);
+      
+      if (response.status === 200) {
+        toast.success("Profile updated successfully");
+        // Cập nhật lại thông tin người dùng trong cookie
+        const updatedUser = { ...userData, ...formData };
+        // Cần cập nhật lại cookie ở đây nếu cần
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    }
+  };
 
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
@@ -55,72 +137,121 @@ export default function SettingsPage() {
             {activeTab === "profile" && (
               <div>
                 <h2 className="text-xl font-bold text-neutral-800 mb-6">Profile Settings</h2>
-                <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
-                    <div className="flex-shrink-0">
-                      <div className="relative">
-                        <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center">
-                          <User className="h-12 w-12 text-primary-600" />
+                {loading ? (
+                  <div className="flex justify-center items-center py-10">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-600"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                      <div className="flex-shrink-0">
+                        <div className="relative">
+                          <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden">
+                            {/* Hiển thị chữ cái đầu tiên của tên người dùng nếu không có ảnh */}
+                            <div className="text-primary-600 text-4xl font-bold">
+                              {formData.firstName ? formData.firstName.charAt(0).toUpperCase() : "U"}
+                            </div>
+                          </div>
+                          <button className="absolute bottom-0 right-0 bg-primary-600 text-white p-1 rounded-full border-2 border-white">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
                         </div>
-                        <button className="absolute bottom-0 right-0 bg-primary-600 text-white p-1 rounded-full border-2 border-white">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                        </button>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-medium text-neutral-800">Profile Picture</h3>
+                        <p className="text-neutral-500 text-sm mb-3">
+                          Upload a new profile picture or avatar for your account
+                        </p>
+                        <div className="flex space-x-3">
+                          <button className="px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 transition-colors">
+                            Upload New
+                          </button>
+                          <button className="px-3 py-1.5 border border-neutral-300 text-neutral-700 text-sm font-medium rounded-md hover:bg-neutral-50 transition-colors">
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium text-neutral-800">Profile Picture</h3>
-                      <p className="text-neutral-500 text-sm mb-3">
-                        Upload a new profile picture or avatar for your account
-                      </p>
-                      <div className="flex space-x-3">
-                        <button className="btn btn-sm btn-primary">Upload New</button>
-                        <button className="btn btn-sm btn-outline">Remove</button>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="border-t border-neutral-200 pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">First Name</label>
-                        <input type="text" className="input" defaultValue="John" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Last Name</label>
-                        <input type="text" className="input" defaultValue="Smith" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Email Address</label>
-                        <input type="email" className="input" defaultValue="john.smith@example.com" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Phone Number</label>
-                        <input type="tel" className="input" defaultValue="+1 (555) 123-4567" />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Bio</label>
-                        <textarea
-                          className="input min-h-[100px]"
-                          defaultValue="Tournament organizer with 5+ years of experience managing football competitions."
-                        ></textarea>
+                    <div className="border-t border-neutral-200 pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700 mb-1">First Name</label>
+                          <input
+                            type="text"
+                            id="firstName"
+                            name="firstName"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="lastName" className="block text-sm font-medium text-neutral-700 mb-1">Last Name</label>
+                          <input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">Email Address</label>
+                          <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-neutral-50"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            readOnly
+                          />
+                          <p className="mt-1 text-xs text-neutral-500">Email address cannot be changed</p>
+                        </div>
+                        <div>
+                          <label htmlFor="phoneNumber" className="block text-sm font-medium text-neutral-700 mb-1">Phone Number</label>
+                          <input
+                            type="tel"
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            value={formData.phoneNumber}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label htmlFor="bio" className="block text-sm font-medium text-neutral-700 mb-1">Bio</label>
+                          <textarea
+                            id="bio"
+                            name="bio"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[100px]"
+                            value={formData.bio}
+                            onChange={handleInputChange}
+                          ></textarea>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="border-t border-neutral-200 pt-6 flex justify-end">
-                    <button className="btn btn-primary flex items-center space-x-2">
-                      <Save className="h-5 w-5" />
-                      <span>Save Changes</span>
-                    </button>
+                    <div className="border-t border-neutral-200 pt-6 flex justify-end">
+                      <button 
+                        onClick={handleSaveChanges}
+                        className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 transition-colors flex items-center space-x-2"
+                      >
+                        <Save className="h-5 w-5" />
+                        <span>Save Changes</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 

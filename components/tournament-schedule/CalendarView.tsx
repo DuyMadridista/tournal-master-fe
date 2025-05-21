@@ -59,13 +59,12 @@ export default function CalendarView({ matches, currentMonth, onUpdateMatch }: C
   const matchesByDate: Record<string, Match[]> = {}
   matches.forEach((match) => {
     const dateStr = match.date.toLocaleDateString().split("T")[0]
-    console.log(dateStr)
+
     if (!matchesByDate[dateStr]) {
       matchesByDate[dateStr] = []
     }
     matchesByDate[dateStr].push(match)
   })
-  console.log(matchesByDate)
   const handleDateClick = (date: Date) => {
     setSelectedDate(date)
   }

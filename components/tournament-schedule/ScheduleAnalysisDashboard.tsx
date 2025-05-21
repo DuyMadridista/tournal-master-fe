@@ -584,17 +584,17 @@ export default function ScheduleAnalysisDashboard({
 
   const generateSummary = (score: number, issues: ScheduleIssue[]): string => {
     if (issues.length === 0) {
-      return "Lịch thi đấu hiện tại đã được tối ưu hóa tốt và không có vấn đề nào được phát hiện."
+      return "The schedule is already optimized and there are no issues detected."
     }
 
     if (score >= 80) {
-      return "Lịch thi đấu khá tốt, nhưng vẫn có thể cải thiện thêm một số vấn đề nhỏ."
+      return "The schedule is good, but there are still some minor issues that can be improved."
     } else if (score >= 60) {
-      return "Lịch thi đấu có một số vấn đề cần được giải quyết để đảm bảo tính công bằng và hiệu quả."
+      return "The schedule has some issues that need to be resolved to ensure fairness and effectiveness."
     } else if (score >= 40) {
-      return "Lịch thi đấu có nhiều vấn đề nghiêm trọng cần được điều chỉnh trước khi có thể sử dụng."
+      return "The schedule has many serious issues that need to be adjusted before it can be used."
     } else {
-      return "Lịch thi đấu có rất nhiều vấn đề nghiêm trọng và cần được xem xét lại toàn diện."
+      return "The schedule has many serious issues and needs to be thoroughly reconsidered."
     }
   }
 
@@ -803,9 +803,9 @@ export default function ScheduleAnalysisDashboard({
         <CardHeader className="pb-4 border-b">
           <div className="flex items-center">
             <CheckCircle className="h-6 w-6 text-green-600 mr-3" />
-            <CardTitle>Lịch thi đấu hoàn hảo</CardTitle>
+            <CardTitle>Perfect Schedule</CardTitle>
           </div>
-          <CardDescription>Không phát hiện vấn đề nào trong lịch thi đấu của bạn</CardDescription>
+          <CardDescription>No issues found in your tournament schedule</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-6">
@@ -814,25 +814,25 @@ export default function ScheduleAnalysisDashboard({
                 <span className="text-2xl font-bold text-green-600">100</span>
               </div>
               <div>
-                <h4 className="text-lg font-semibold">Điểm đánh giá</h4>
-                <p className="text-green-600">Lịch thi đấu đã được tối ưu hóa hoàn hảo</p>
+                <h4 className="text-lg font-semibold">Evaluation Score</h4>
+                <p className="text-green-600">Your tournament schedule is optimized perfectly</p>
               </div>
             </div>
           </div>
           <Alert className="bg-green-50 border-green-200">
             <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertTitle>Tuyệt vời!</AlertTitle>
+            <AlertTitle>Perfect!</AlertTitle>
             <AlertDescription>
-              Lịch thi đấu hiện tại không có vấn đề nào. Tất cả các đội đều có thời gian nghỉ hợp lý và số trận đấu được
-              phân bổ đều đặn giữa các ngày.
+              Your tournament schedule is optimized perfectly. All teams have appropriate rest days and matches are evenly
+              distributed across days.
             </AlertDescription>
           </Alert>
         </CardContent>
         <CardFooter className="border-t pt-4 flex justify-between">
-          <div className="text-sm text-gray-500">Đã phân tích {analysis.analyzedMatches} trận đấu</div>
+          <div className="text-sm text-gray-500">{analysis.analyzedMatches} matches analyzed</div>
           <Button variant="outline" onClick={analyzeSchedule} className="flex items-center">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Phân tích lại
+            Analyze again
           </Button>
         </CardFooter>
       </Card>
@@ -848,30 +848,30 @@ export default function ScheduleAnalysisDashboard({
             {getScoreIcon(analysis.score)}
             <CardTitle className="ml-3">
               {analysis.score < 40
-                ? "Lịch thi đấu có vấn đề nghiêm trọng"
+                ? "Your tournament schedule has critical issues"
                 : analysis.score < 60
-                  ? "Lịch thi đấu cần cải thiện đáng kể"
+                  ? "Your tournament schedule needs significant improvement"
                   : analysis.score < 80
-                    ? "Lịch thi đấu cần cải thiện"
-                    : "Lịch thi đấu khá tốt"}
+                    ? "Your tournament schedule needs improvement"
+                    : "Your tournament schedule is good"}
             </CardTitle>
           </div>
           <Button variant="outline" onClick={analyzeSchedule} className="flex items-center">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Phân tích lại
+            Analyze again
           </Button>
         </div>
-        <CardDescription>Phát hiện {analysis.issues.length} vấn đề trong lịch thi đấu</CardDescription>
+        <CardDescription>Detected {analysis.issues.length} issues in your tournament schedule</CardDescription>
       </CardHeader>
 
       <div>
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
           <div className="px-6 pt-2 border-b">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Tổng quan</TabsTrigger>
-              <TabsTrigger value="issues">Vấn đề ({analysis.issues.length})</TabsTrigger>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="issues">Issues ({analysis.issues.length})</TabsTrigger>
               <TabsTrigger value="suggestions">
-                Đề xuất ({analysis.issues.filter((i) => i.autoFixable).length})
+                Suggestions ({analysis.issues.filter((i) => i.autoFixable).length})
               </TabsTrigger>
             </TabsList>
           </div>
@@ -885,18 +885,18 @@ export default function ScheduleAnalysisDashboard({
                 >
                   <span className={`text-3xl font-bold ${getScoreColor(analysis.score)}`}>{analysis.score}</span>
                 </div>
-                <span className="mt-2 font-medium">Điểm đánh giá</span>
+                <span className="mt-2 font-medium">Evaluation Score</span>
               </div>
 
               <div className="flex-1">
-                <h4 className="text-lg font-semibold mb-2">Tóm tắt phân tích</h4>
+                <h4 className="text-lg font-semibold mb-2">Analysis Summary</h4>
                 <p className="text-gray-700 mb-4">{analysis.summary}</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center">
                     <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
                     <div>
-                      <div className="text-sm font-medium text-red-800">Nghiêm trọng</div>
+                      <div className="text-sm font-medium text-red-800">Critical</div>
                       <div className="text-xl font-bold text-red-700">{analysis.issuesBySeverity.critical}</div>
                     </div>
                   </div>
@@ -904,7 +904,7 @@ export default function ScheduleAnalysisDashboard({
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center">
                     <AlertCircle className="h-5 w-5 text-orange-500 mr-2" />
                     <div>
-                      <div className="text-sm font-medium text-orange-800">Cao</div>
+                      <div className="text-sm font-medium text-orange-800">High</div>
                       <div className="text-xl font-bold text-orange-700">{analysis.issuesBySeverity.high}</div>
                     </div>
                   </div>
@@ -912,7 +912,7 @@ export default function ScheduleAnalysisDashboard({
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center">
                     <AlertCircle className="h-5 w-5 text-amber-500 mr-2" />
                     <div>
-                      <div className="text-sm font-medium text-amber-800">Trung bình</div>
+                      <div className="text-sm font-medium text-amber-800">Medium</div>
                       <div className="text-xl font-bold text-amber-700">{analysis.issuesBySeverity.medium}</div>
                     </div>
                   </div>
@@ -920,7 +920,7 @@ export default function ScheduleAnalysisDashboard({
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center">
                     <Zap className="h-5 w-5 text-blue-500 mr-2" />
                     <div>
-                      <div className="text-sm font-medium text-blue-800">Có thể sửa tự động</div>
+                      <div className="text-sm font-medium text-blue-800">Auto Fixable</div>
                       <div className="text-xl font-bold text-blue-700">
                         {analysis.issues.filter((i) => i.autoFixable).length}
                       </div>
@@ -936,7 +936,7 @@ export default function ScheduleAnalysisDashboard({
                 <div className="bg-red-50 px-4 py-3 border-b border-red-200">
                   <h4 className="font-semibold text-red-800 flex items-center">
                     <AlertTriangle className="h-5 w-5 mr-2" />
-                    Vấn đề nghiêm trọng cần giải quyết ngay
+                    Critical issues need to be resolved immediately
                   </h4>
                 </div>
                 <div className="p-4">
@@ -967,12 +967,12 @@ export default function ScheduleAnalysisDashboard({
                               {fixingIssueId === issue.id ? (
                                 <>
                                   <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                                  Đang sửa...
+                                  Fixing...
                                 </>
                               ) : (
                                 <>
                                   <Zap className="h-4 w-4 mr-1" />
-                                  Sửa ngay
+                                  Fix now
                                 </>
                               )}
                             </Button>
@@ -989,7 +989,7 @@ export default function ScheduleAnalysisDashboard({
                           setSeverityFilter("critical")
                         }}
                       >
-                        Xem tất cả {analysis.issuesBySeverity.critical} vấn đề nghiêm trọng
+                        See all {analysis.issuesBySeverity.critical} critical issues
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     )}
@@ -1003,7 +1003,7 @@ export default function ScheduleAnalysisDashboard({
               <div className="bg-gray-50 px-4 py-3 border-b">
                 <h4 className="font-semibold flex items-center">
                   <BarChart3 className="h-5 w-5 mr-2" />
-                  Phân loại vấn đề
+                  Issue types breakdown
                 </h4>
               </div>
               <div className="p-4">
@@ -1040,7 +1040,7 @@ export default function ScheduleAnalysisDashboard({
                 <div className="bg-blue-50 px-4 py-3 border-b border-blue-200">
                   <h4 className="font-semibold text-blue-800 flex items-center">
                     <Zap className="h-5 w-5 mr-2" />
-                    Vấn đề có thể sửa tự động
+                    Auto-fixable issues
                   </h4>
                 </div>
                 <div className="p-4">
@@ -1073,12 +1073,12 @@ export default function ScheduleAnalysisDashboard({
                             {fixingIssueId === issue.id ? (
                               <>
                                 <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                                Đang sửa...
+                                Fixing...
                               </>
                             ) : (
                               <>
                                 <Zap className="h-4 w-4 mr-1" />
-                                Sửa tự động
+                                Fix now
                               </>
                             )}
                           </Button>
@@ -1108,23 +1108,23 @@ export default function ScheduleAnalysisDashboard({
               <div className="flex items-center space-x-2">
                 <Select value={severityFilter} onValueChange={(value) => setSeverityFilter(value as any)}>
                   <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Mức độ nghiêm trọng" />
+                    <SelectValue placeholder="Severity" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tất cả mức độ</SelectItem>
-                    <SelectItem value="critical">Nghiêm trọng</SelectItem>
-                    <SelectItem value="high">Cao</SelectItem>
-                    <SelectItem value="medium">Trung bình</SelectItem>
-                    <SelectItem value="low">Thấp</SelectItem>
+                    <SelectItem value="all">All severity</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as any)}>
                   <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Loại vấn đề" />
+                    <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tất cả loại</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     {Object.keys(analysis.issuesByType).map((type) => (
                       <SelectItem key={type} value={type}>
                         {getIssueTypeLabel(type as IssueType)}
@@ -1135,25 +1135,25 @@ export default function ScheduleAnalysisDashboard({
 
                 <Button variant="outline" size="sm" className="flex items-center">
                   <Filter className="h-4 w-4 mr-2" />
-                  Lọc
+                  Filter
                 </Button>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" size="sm" onClick={expandAllIssues}>
                   <ChevronDown className="h-4 w-4 mr-1" />
-                  Mở rộng tất cả
+                  Expand all
                 </Button>
                 <Button variant="ghost" size="sm" onClick={collapseAllIssues}>
                   <ChevronUp className="h-4 w-4 mr-1" />
-                  Thu gọn tất cả
+                  Collapse all
                 </Button>
               </div>
             </div>
 
             <div className="space-y-4">
               {getFilteredIssues().length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Không tìm thấy vấn đề nào phù hợp với bộ lọc</div>
+                <div className="text-center py-8 text-gray-500">No issues found matching the filter</div>
               ) : (
                 <Accordion
                   type="multiple"
@@ -1174,12 +1174,12 @@ export default function ScheduleAnalysisDashboard({
                       <AccordionContent className="px-4 py-3 border-t">
                         <div className="space-y-4">
                           <div>
-                            <h5 className="font-medium mb-1">Mô tả:</h5>
+                            <h5 className="font-medium mb-1">Description:</h5>
                             <p className="text-gray-700">{issue.description}</p>
                           </div>
 
                           <div>
-                            <h5 className="font-medium mb-1">Trận đấu bị ảnh hưởng:</h5>
+                            <h5 className="font-medium mb-1">Affected matches:</h5>
                             <ul className="list-disc pl-5 space-y-1">
                               {issue.affectedMatches.map((match, idx) => (
                                 <li key={idx} className="text-gray-700">
@@ -1192,7 +1192,7 @@ export default function ScheduleAnalysisDashboard({
 
                           {issue.affectedTeams && issue.affectedTeams.length > 0 && (
                             <div>
-                              <h5 className="font-medium mb-1">Đội bị ảnh hưởng:</h5>
+                              <h5 className="font-medium mb-1">Affected teams:</h5>
                               <ul className="list-disc pl-5 space-y-1">
                                 {issue.affectedTeams.map((team, idx) => (
                                   <li key={idx} className="text-gray-700">
@@ -1204,7 +1204,7 @@ export default function ScheduleAnalysisDashboard({
                           )}
 
                           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                            <h5 className="font-medium text-blue-800 mb-1">Đề xuất:</h5>
+                            <h5 className="font-medium text-blue-800 mb-1">Recommendation:</h5>
                             <p className="text-blue-700">{issue.recommendation}</p>
                           </div>
 
@@ -1218,12 +1218,12 @@ export default function ScheduleAnalysisDashboard({
                                 {fixingIssueId === issue.id ? (
                                   <>
                                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                                    Đang sửa...
+                                    Fixing...
                                   </>
                                 ) : (
                                   <>
                                     <Zap className="h-4 w-4 mr-2" />
-                                    {issue.autoFixDescription || "Sửa tự động"}
+                                    {issue.autoFixDescription || "Auto fix"}
                                   </>
                                 )}
                               </Button>
@@ -1233,11 +1233,11 @@ export default function ScheduleAnalysisDashboard({
                                   <TooltipTrigger asChild>
                                     <Button variant="outline" disabled>
                                       <Info className="h-4 w-4 mr-2" />
-                                      Cần sửa thủ công
+                                      Need manual fix
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>Vấn đề này cần được sửa thủ công theo đề xuất</p>
+                                    <p>This issue needs to be fixed manually according to the recommendation</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -1254,15 +1254,15 @@ export default function ScheduleAnalysisDashboard({
 
           <TabsContent value="suggestions" className="p-6">
             <div className="mb-4">
-              <h4 className="text-lg font-semibold mb-2">Đề xuất sửa lỗi tự động</h4>
+              <h4 className="text-lg font-semibold mb-2">Auto fix suggestions</h4>
               <p className="text-gray-600">
-                Các vấn đề sau đây có thể được sửa tự động. Nhấn vào nút "Sửa tự động" để áp dụng đề xuất.
+                The following issues can be automatically fixed. Click on the "Auto fix" button to apply the suggestion.
               </p>
             </div>
 
             <div className="space-y-4">
               {analysis.issues.filter((i) => i.autoFixable).length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Không có vấn đề nào có thể sửa tự động</div>
+                <div className="text-center py-8 text-gray-500">No issues can be automatically fixed</div>
               ) : (
                 analysis.issues
                   .filter((issue) => issue.autoFixable)
@@ -1282,12 +1282,12 @@ export default function ScheduleAnalysisDashboard({
                       <CardContent className="pt-4">
                         <div className="space-y-3">
                           <div>
-                            <h5 className="text-sm font-medium text-gray-500">Vấn đề:</h5>
+                            <h5 className="text-sm font-medium text-gray-500">Issue:</h5>
                             <p className="text-gray-700">{issue.description}</p>
                           </div>
 
                           <div>
-                            <h5 className="text-sm font-medium text-gray-500">Trận đấu bị ảnh hưởng:</h5>
+                            <h5 className="text-sm font-medium text-gray-500">Affected matches:</h5>
                             <ul className="list-disc pl-5 space-y-1">
                               {issue.affectedMatches.slice(0, 2).map((match, idx) => (
                                 <li key={idx} className="text-gray-700">
@@ -1297,7 +1297,7 @@ export default function ScheduleAnalysisDashboard({
                               ))}
                               {issue.affectedMatches.length > 2 && (
                                 <li className="text-gray-500 italic">
-                                  ...và {issue.affectedMatches.length - 2} trận đấu khác
+                                  ...and {issue.affectedMatches.length - 2} more matches
                                 </li>
                               )}
                             </ul>
@@ -1307,7 +1307,7 @@ export default function ScheduleAnalysisDashboard({
                             <div className="flex items-start">
                               <Zap className="h-5 w-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
                               <div>
-                                <h6 className="font-medium text-blue-800 mb-1">Đề xuất sửa tự động:</h6>
+                                <h6 className="font-medium text-blue-800 mb-1">Auto fix suggestion:</h6>
                                 <p className="text-blue-700">{issue.autoFixDescription}</p>
                               </div>
                             </div>
@@ -1323,12 +1323,12 @@ export default function ScheduleAnalysisDashboard({
                           {fixingIssueId === issue.id ? (
                             <>
                               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                              Đang sửa...
+                              Fixing...
                             </>
                           ) : (
                             <>
                               <Zap className="h-4 w-4 mr-2" />
-                              Sửa tự động
+                              Auto fix
                             </>
                           )}
                         </Button>
@@ -1342,10 +1342,10 @@ export default function ScheduleAnalysisDashboard({
       </div>
 
       <CardFooter className="border-t pt-4 flex justify-between">
-        <div className="text-sm text-gray-500">Đã phân tích {analysis.analyzedMatches} trận đấu</div>
+        <div className="text-sm text-gray-500">Analyzed {analysis.analyzedMatches} matches</div>
         <div className="flex items-center">
           <span className={`text-sm font-medium ${getScoreColor(analysis.score)}`}>
-            Điểm đánh giá: {analysis.score}/100
+            Score: {analysis.score}/100
           </span>
         </div>
       </CardFooter>

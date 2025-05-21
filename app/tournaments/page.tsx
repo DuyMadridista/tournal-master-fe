@@ -129,7 +129,6 @@ function getStatusLabel(status: Tournament['status']) {
     }
     fetchCategories()
   }, [])
-  console.log(categories)
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -143,7 +142,6 @@ function getStatusLabel(status: Tournament['status']) {
     } else if (name === "categoryId") {
       // Special handling for categoryId to ensure it's properly converted to number
       const numValue = parseInt(value);
-      console.log('Category selected:', numValue);
       setFormData({
         ...formData,
         [name]: numValue
@@ -274,9 +272,7 @@ function getStatusLabel(status: Tournament['status']) {
         })
         // Map API data to Tournament[]
         const apiData = res.data.data as any[]
-        console.log("dhgfjdsfg");
-        
-        console.log(apiData)
+
         const mapped: Tournament[] = apiData.map((item) => {
           // Dùng status gốc từ API
           const status: Tournament['status'] = item.status
@@ -345,9 +341,7 @@ function getStatusLabel(status: Tournament['status']) {
             Authorization: `Bearer ${token}`,
           },
         });
-        // Map API data to Tournament[]
         const apiData = res.data.data as any[];
-        console.log(apiData)
         const mapped: Tournament[] = apiData.map((item) => {
   const status: Tournament['status'] = item.status;
   let startDate = undefined, endDate = undefined;

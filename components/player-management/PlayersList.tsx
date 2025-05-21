@@ -109,8 +109,6 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log(res.data);
-        
         const data = res.data.data;
         setPlayers(Array.isArray(data) ? data : []);
       } catch (error) {

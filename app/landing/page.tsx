@@ -23,51 +23,69 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState("create")
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-neutral-50">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
       {/* Navigation */}
-      <header className="border-b border-neutral-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Trophy className="h-8 w-8 text-primary-600" />
-            <span className="text-2xl font-bold text-neutral-900">Tourna Master</span>
+      <header className="border-b border-indigo-100 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-2 rounded-lg">
+              <Trophy className="h-7 w-7 text-white" />
+            </div>
+            <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-500">Tourna Master</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-neutral-700 hover:text-primary-600 font-medium">
+            <a href="#features" className="text-neutral-700 hover:text-indigo-600 font-medium transition-colors duration-200">
               Features
             </a>
-            <a href="#benefits" className="text-neutral-700 hover:text-primary-600 font-medium">
+            <a href="#benefits" className="text-neutral-700 hover:text-indigo-600 font-medium transition-colors duration-200">
               Benefits
             </a>
-            <a href="#testimonials" className="text-neutral-700 hover:text-primary-600 font-medium">
+            <a href="#testimonials" className="text-neutral-700 hover:text-indigo-600 font-medium transition-colors duration-200">
               Testimonials
             </a>
           </nav>
-          <div className="flex items-center space-x-4">
-            <Link href="/login" className="hidden md:block text-neutral-700 hover:text-primary-600 font-medium">
+          <div className="flex items-center space-x-5">
+            <Link href="/login" className="hidden md:block bg-gradient-to-r from-blue-500 to-indigo-300 text-white rounded-full px-6 py-2.5 font-medium shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:scale-105 duration-200 text-neutral-700 hover:text-indigo-600 font-medium transition-colors duration-200">
               Login
             </Link>
             <Link
               href="/signup"
-              className="btn btn-primary rounded-full px-6 py-2.5 shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all"
+              className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-full px-6 py-2.5 font-medium shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:scale-105 duration-200"
             >
-              Free Trial
+              Start For Free
             </Link>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 md:py-28">
-        <div className="container mx-auto px-4">
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-200 rounded-full opacity-20 blur-3xl"></div>
+          <div className="absolute top-1/3 -right-24 w-80 h-80 bg-blue-300 rounded-full opacity-20 blur-3xl"></div>
+          <div className="absolute -bottom-24 left-1/3 w-72 h-72 bg-indigo-300 rounded-full opacity-20 blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-block px-4 py-1.5 mb-6 rounded-full bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 text-indigo-800 font-medium text-sm"
+              >
+                ✨ The ultimate tournament management platform
+              </motion.div>
+              
               <motion.h1
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-900 mb-6 leading-tight"
+                className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="text-primary-600">Smart</span> and <span className="text-primary-600">Efficient</span>{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-600">Smart</span> and <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">Efficient</span>{" "}
                 Tournament Management
               </motion.h1>
               <motion.p
@@ -87,36 +105,40 @@ export default function LandingPage() {
               >
                 <Link
                   href="/signup"
-                  className="btn btn-primary rounded-full px-8 py-3 text-lg shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all"
+                  className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-full px-8 py-3.5 text-lg font-medium shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:scale-105 duration-200 flex items-center justify-center"
                 >
-                  Get Started
+                  <span>Get Started</span>
+                  <ChevronRight className="h-5 w-5 ml-1" />
                 </Link>
                 <a
                   href="#demo"
-                  className="btn btn-outline rounded-full px-8 py-3 text-lg border-2 border-neutral-300 hover:border-primary-300 hover:bg-primary-50"
+                  className="rounded-full px-8 py-3.5 text-lg font-medium border-2 border-indigo-200 text-indigo-700 hover:border-indigo-300 hover:bg-indigo-50 transition-all flex items-center justify-center"
                 >
-                  View Demo
+                  <span>View Demo</span>
                 </a>
               </motion.div>
             </div>
             <div className="md:w-1/2">
               <motion.div
-                className="relative rounded-2xl shadow-2xl overflow-hidden border-8 border-white"
+                className="relative rounded-2xl shadow-xl overflow-hidden border-8 border-white bg-white"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <Image
-                  src="/placeholder.svg?height=600&width=800"
-                  alt="Tourna Master Dashboard"
-                  width={800}
-                  height={600}
-                  className="w-full h-auto"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
-                  <div className="p-6 text-white">
-                    <p className="text-lg font-semibold">Bảng điều khiển trực quan</p>
-                    <p className="text-sm opacity-80">Quản lý mọi khía cạnh của giải đấu từ một nơi duy nhất</p>
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl blur opacity-30"></div>
+                <div className="relative rounded-xl overflow-hidden">
+                  <Image
+                    src="https://d3b9lqvq58doft.cloudfront.net/uploads/image+(3).png?height=600&width=800"
+                    alt="Tourna Master Dashboard"
+                    width={800}
+                    height={600}
+                    className="w-full h-auto"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/70 to-transparent flex items-end">
+                    <div className="p-6 text-white">
+                      <p className="text-lg font-semibold">Smart and Efficient Tournament Management</p>
+                      <p className="text-sm opacity-90">Manage every aspect of the tournament from one place</p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -126,79 +148,157 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-primary-900 text-white">
-        <div className="container mx-auto px-4">
+      <section className="py-16 bg-gradient-to-r from-indigo-600 to-blue-600 text-white relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-white rounded-full opacity-10"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full opacity-5"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <p className="text-4xl font-bold mb-2">500+</p>
-              <p className="text-sm text-primary-200">Tournaments Organized</p>
+            <div className="text-center transform transition-transform hover:scale-105 duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 mb-4">
+                <Trophy className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-4xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">500+</p>
+              <p className="text-sm text-blue-100 font-medium">Tournaments Organized</p>
             </div>
-            <div className="text-center">
-              <p className="text-4xl font-bold mb-2">10,000+</p>
-              <p className="text-sm text-primary-200">Matches Scheduled</p>
+            <div className="text-center transform transition-transform hover:scale-105 duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 mb-4">
+                <Calendar className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-4xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">10,000+</p>
+              <p className="text-sm text-blue-100 font-medium">Matches Scheduled</p>
             </div>
-            <div className="text-center">
-              <p className="text-4xl font-bold mb-2">98%</p>
-              <p className="text-sm text-primary-200">Customer Satisfaction</p>
+            <div className="text-center transform transition-transform hover:scale-105 duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 mb-4">
+                <CheckCircle className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-4xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">98%</p>
+              <p className="text-sm text-blue-100 font-medium">Customer Satisfaction</p>
             </div>
-            <div className="text-center">
-              <p className="text-4xl font-bold mb-2">40%</p>
-              <p className="text-sm text-primary-200">Time Saved</p>
+            <div className="text-center transform transition-transform hover:scale-105 duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 mb-4">
+                <Clock className="h-8 w-8 text-white" />
+              </div>
+              <p className="text-4xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">40%</p>
+              <p className="text-sm text-blue-100 font-medium">Time Saved</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section id="features" className="py-20 bg-white relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 right-0 w-full h-full overflow-hidden z-0">
+          <div className="absolute top-20 right-0 w-72 h-72 bg-indigo-100 rounded-full opacity-50 blur-3xl"></div>
+          <div className="absolute bottom-20 left-0 w-80 h-80 bg-blue-100 rounded-full opacity-50 blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">Key Features</h2>
+            <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 text-indigo-800 font-medium text-sm">
+              Powerful Features
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-600">Key Features</h2>
             <p className="text-xl text-neutral-700 max-w-3xl mx-auto">
               Tourna Master provides all the tools you need to create and manage tournament schedules efficiently
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={<Calendar className="h-8 w-8 text-primary-600" />}
-              title="Automated Scheduling"
-              description="Create optimized tournament schedules with just a few clicks, saving hours of manual planning."
-            />
-            <FeatureCard
-              icon={<AlertTriangle className="h-8 w-8 text-primary-600" />}
-              title="Conflict Detection"
-              description="Automatically detect and alert about schedule conflicts, teams playing too many matches, or insufficient rest time."
-            />
-            <FeatureCard
-              icon={<Sparkles className="h-8 w-8 text-primary-600" />}
-              title="Smart Suggestions"
-              description="Receive improvement suggestions for your schedule based on data analysis and optimization rules."
-            />
-            <FeatureCard
-              icon={<Users className="h-8 w-8 text-primary-600" />}
-              title="Team Management"
-              description="Track all participating teams and players, including contact information and match history."
-            />
-            <FeatureCard
-              icon={<BarChart3 className="h-8 w-8 text-primary-600" />}
-              title="Efficiency Analysis"
-              description="Evaluate your schedule on a 100-point scale and receive specific suggestions for improvement."
-            />
-            <FeatureCard
-              icon={<Zap className="h-8 w-8 text-primary-600" />}
-              title="Automatic Optimization"
-              description="Apply optimization suggestions with one click to instantly improve your tournament schedule."
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <FeatureCard
+                icon={<Calendar className="h-8 w-8 text-indigo-600" />}
+                title="Automated Scheduling"
+                description="Create optimized tournament schedules with just a few clicks, saving hours of manual planning."
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <FeatureCard
+                icon={<AlertTriangle className="h-8 w-8 text-blue-600" />}
+                title="Conflict Detection"
+                description="Automatically detect and alert about schedule conflicts, teams playing too many matches, or insufficient rest time."
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <FeatureCard
+                icon={<Sparkles className="h-8 w-8 text-indigo-600" />}
+                title="Smart Suggestions"
+                description="Receive improvement suggestions for your schedule based on data analysis and optimization rules."
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <FeatureCard
+                icon={<Users className="h-8 w-8 text-blue-600" />}
+                title="Team Management"
+                description="Track all participating teams and players, including contact information and match history."
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <FeatureCard
+                icon={<BarChart3 className="h-8 w-8 text-indigo-600" />}
+                title="Efficiency Analysis"
+                description="Evaluate your schedule on a 100-point scale and receive specific suggestions for improvement."
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <FeatureCard
+                icon={<Zap className="h-8 w-8 text-blue-600" />}
+                title="Automatic Optimization"
+                description="Apply optimization suggestions with one click to instantly improve your tournament schedule."
+              />
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Schedule Optimization Showcase */}
-      <section id="demo" className="py-20 bg-neutral-50">
-        <div className="container mx-auto px-4">
+      <section id="demo" className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-indigo-200 rounded-full opacity-20 blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-blue-200 rounded-full opacity-20 blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">Schedule Optimization</h2>
+            <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 text-indigo-800 font-medium text-sm">
+              Smart Analysis
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-600">Schedule Optimization</h2>
             <p className="text-xl text-neutral-700 max-w-3xl mx-auto">
               See how Tourna Master analyzes and improves your tournament schedule
             </p>
@@ -252,7 +352,7 @@ export default function LandingPage() {
                   <div className="md:w-1/2">
                     <div className="rounded-lg border border-neutral-200 overflow-hidden">
                       <Image
-                        src="/placeholder.svg?height=400&width=600"
+                        src="https://d3b9lqvq58doft.cloudfront.net/uploads/image+(6).png?height=400&width=600"
                         alt="Create Tournament Schedule"
                         width={600}
                         height={400}
@@ -301,7 +401,7 @@ export default function LandingPage() {
                   <div className="md:w-1/2">
                     <div className="rounded-lg border border-neutral-200 overflow-hidden">
                       <Image
-                        src="/placeholder.svg?height=400&width=600"
+                        src="https://d3b9lqvq58doft.cloudfront.net/uploads/image+(5).png?height=400&width=600"
                         alt="Schedule Analysis"
                         width={600}
                         height={400}
@@ -342,7 +442,7 @@ export default function LandingPage() {
                   <div className="md:w-1/2">
                     <div className="rounded-lg border border-neutral-200 overflow-hidden">
                       <Image
-                        src="/placeholder.svg?height=400&width=600"
+                        src="https://d3b9lqvq58doft.cloudfront.net/uploads/image+(7).png?height=400&width=600"
                         alt="Schedule Optimization"
                         width={600}
                         height={400}
@@ -429,10 +529,20 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-20 bg-neutral-50">
-        <div className="container mx-auto px-4">
+      <section id="testimonials" className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-200 rounded-full opacity-20 blur-3xl"></div>
+          <div className="absolute bottom-20 left-20 w-80 h-80 bg-indigo-200 rounded-full opacity-20 blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-indigo-200/30 rounded-full"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">What Our Customers Say</h2>
+            <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 text-indigo-800 font-medium text-sm">
+              Success Stories
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-600">What Our Customers Say</h2>
             <p className="text-xl text-neutral-700 max-w-3xl mx-auto">
               Hundreds of tournament organizers trust Tourna Master
             </p>
@@ -459,24 +569,68 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary-900 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to optimize your tournament schedule?</h2>
-          <p className="text-xl mb-8 max-w-3xl mx-auto">Start today and experience the difference with Tourna Master</p>
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+      <section className="py-24 bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-white rounded-full opacity-5"></div>
+          <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-white rounded-full opacity-5"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-white/10 rounded-full"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/10 rounded-full"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/10 rounded-full"></div>
+        </div>
+        
+        <div className="container mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="mb-6 inline-block px-6 py-2 rounded-full bg-white/10 text-white font-medium text-sm"
+          >
+            Get Started Today
+          </motion.div>
+          
+          <motion.h2 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            viewport={{ once: true }}
+          >
+            Ready to optimize your <span className="text-blue-200">tournament schedule</span>?
+          </motion.h2>
+          
+          <motion.p 
+            className="text-xl mb-10 max-w-3xl mx-auto text-blue-100"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            Start today and experience the difference with Tourna Master
+          </motion.p>
+          
+          <motion.div
+            className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            viewport={{ once: true }}
+          >
             <Link
               href="/signup"
-              className="btn bg-white text-primary-900 hover:bg-neutral-100 rounded-full px-8 py-3 text-lg font-medium"
+              className="bg-white text-indigo-700 hover:bg-blue-50 rounded-full px-8 py-4 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center"
             >
-              Start Free Trial
+              <span>Start For Free</span>
+              <ChevronRight className="h-5 w-5 ml-1" />
             </Link>
             <Link
               href="/demo"
-              className="btn border-2 border-white text-white hover:bg-primary-800 rounded-full px-8 py-3 text-lg font-medium"
+              className="bg-transparent border-2 border-white/70 text-white hover:bg-white/10 rounded-full px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center"
             >
-              View Demo
+              <span>View Demo</span>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -490,8 +644,7 @@ export default function LandingPage() {
                 <span className="text-xl font-bold">Tourna Master</span>
               </div>
               <p className="mb-4">
-                Nền tảng quản lý giải đấu thông minh giúp tối ưu hóa lịch thi đấu và nâng cao trải nghiệm cho mọi người
-                tham gia.
+                Tourna Master is a smart tournament management platform that helps optimize schedules and enhance the experience for participants.
               </p>
               <div className="flex space-x-4">
                 <a href="#" className="text-neutral-400 hover:text-white">
@@ -635,10 +788,16 @@ export default function LandingPage() {
 // Component for feature cards
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary-200">
-      <div className="mb-4">{icon}</div>
-      <h3 className="text-xl font-bold text-neutral-900 mb-2">{title}</h3>
-      <p className="text-neutral-700">{description}</p>
+    <div className="bg-white rounded-xl border border-indigo-100 p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-indigo-200 group relative overflow-hidden">
+      {/* Subtle gradient background that appears on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      
+      {/* Content positioned above the background */}
+      <div className="relative z-10">
+        <div className="mb-5 p-3 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg inline-block group-hover:scale-110 transition-transform duration-300">{icon}</div>
+        <h3 className="text-xl font-bold text-neutral-900 mb-3">{title}</h3>
+        <p className="text-neutral-600">{description}</p>
+      </div>
     </div>
   )
 }
