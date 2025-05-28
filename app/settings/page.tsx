@@ -68,19 +68,15 @@ export default function SettingsPage() {
     });
   };
 
-  // Hàm xử lý khi người dùng lưu thay đổi
   const handleSaveChanges = async () => {
     try {
       if (!userData) return;
       
-      // Gọi API để cập nhật thông tin người dùng
       const response = await api.put(`/organizer/${userData.id}`, formData);
       
       if (response.status === 200) {
         toast.success("Profile updated successfully");
-        // Cập nhật lại thông tin người dùng trong cookie
         const updatedUser = { ...userData, ...formData };
-        // Cần cập nhật lại cookie ở đây nếu cần
       }
     } catch (error) {
       console.error("Error updating profile:", error);

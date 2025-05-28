@@ -5,122 +5,7 @@ import type React from "react"
 import type { Match, Team, MatchDay } from "../types/tournament"
 import ActionToolbar from "../components/ui-elements/ActionToolbar"
 import { Calendar, Clock, MapPin, FileDown, Filter, Tag } from "lucide-react"
-import { useDataFetching } from "../context/DataFetchingContext"
 import SkeletonLoader from "../components/ui-elements/SkeletonLoader"
-
-// Sample data for demonstration
-const sampleTeams: Team[] = [
-  {
-    id: "team-1",
-    name: "FC Barcelona",
-    tier: 1,
-    group: "A",
-    leaderName: "Carlos Rodriguez",
-    leaderEmail: "carlos@example.com",
-    phoneNumber: "+1234567890",
-    playerCount: 18,
-  },
-  {
-    id: "team-2",
-    name: "Real Madrid",
-    tier: 2,
-    group: "B",
-    leaderName: "Miguel Fernandez",
-    leaderEmail: "miguel@example.com",
-    phoneNumber: "+0987654321",
-    playerCount: 20,
-  },
-  {
-    id: "team-3",
-    name: "Manchester United",
-    tier: 3,
-    group: "C",
-    leaderName: "James Wilson",
-    leaderEmail: "james@example.com",
-    phoneNumber: "+1122334455",
-    playerCount: 22,
-  },
-  {
-    id: "team-4",
-    name: "Bayern Munich",
-    tier: 4,
-    group: "D",
-    leaderName: "Hans Mueller",
-    leaderEmail: "hans@example.com",
-    phoneNumber: "+6677889900",
-    playerCount: 19,
-  },
-]
-
-// Sample match days
-const sampleMatchDays: MatchDay[] = [
-  {
-    id: "md-1",
-    date: new Date("2023-06-17"),
-    name: "Group Stage - Round 1",
-    isActive: true,
-  },
-  {
-    id: "md-2",
-    date: new Date("2023-06-18"),
-    name: "Group Stage - Round 1",
-    isActive: true,
-  },
-  {
-    id: "md-3",
-    date: new Date("2023-06-24"),
-    name: "Group Stage - Round 2",
-    isActive: true,
-  },
-  {
-    id: "md-4",
-    date: new Date("2023-06-25"),
-    name: "Group Stage - Round 2",
-    isActive: true,
-  },
-  {
-    id: "md-5",
-    date: new Date("2023-07-01"),
-    name: "Group Stage - Round 3",
-    isActive: true,
-  },
-  {
-    id: "md-6",
-    date: new Date("2023-07-02"),
-    name: "Group Stage - Round 3",
-    isActive: true,
-  },
-]
-
-// Generate sample matches
-const generateSampleMatches = (): Match[] => {
-  const matches: Match[] = []
-
-  // Group stage matches
-  sampleMatchDays.forEach((matchDay, dayIndex) => {
-    for (let i = 0; i < 3; i++) {
-      const team1Index = (dayIndex + i) % sampleTeams.length
-      const team2Index = (dayIndex + i + 1) % sampleTeams.length
-
-      matches.push({
-        id: `match-${matches.length + 1}`,
-        date: matchDay.date,
-        time: `${14 + i * 2}:00`,
-        team1: sampleTeams[team1Index],
-        team2: sampleTeams[team2Index],
-        venue: `Field ${(i % 3) + 1}`,
-        round: matchDay.name,
-        group: sampleTeams[team1Index].group,
-        completed: dayIndex < 2,
-        matchDayId: matchDay.id,
-      })
-    }
-  })
-
-  return matches
-}
-
-const sampleMatches = generateSampleMatches()
 
 // Group matches by match day
 const groupMatchesByMatchDay = (matches: Match[], matchDays: MatchDay[]): Record<string, Match[]> => {
@@ -142,27 +27,7 @@ export default function Schedule() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [selectedMatchDay, setSelectedMatchDay] = useState<string | null>(null)
-  const { simulateFetch, isLoading } = useDataFetching()
 
-  // Simulate initial data loading
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Simulate API call with a longer delay for initial load
-        const matchDaysData = await simulateFetch(sampleMatchDays, 1000)
-        setMatchDays(matchDaysData)
-
-        const matchesData = await simulateFetch(sampleMatches, 1000)
-        setMatches(matchesData)
-      } catch (error) {
-        console.error("Failed to load data:", error)
-      } finally {
-        setIsInitialLoading(false)
-      }
-    }
-
-    loadData()
-  }, [simulateFetch])
 
   const filteredMatches = matches.filter(
     (match) =>
@@ -179,8 +44,6 @@ export default function Schedule() {
 
   const handleExportSchedule = async () => {
     try {
-      // Simulate API call to export schedule
-      await simulateFetch(null, 1500)
       alert("Schedule exported successfully!")
     } catch (error) {
       console.error("Failed to export schedule:", error)
@@ -206,9 +69,6 @@ export default function Schedule() {
     const matchId = e.dataTransfer.getData("matchId")
 
     try {
-      // Simulate API call to update match date and time
-      await simulateFetch(null, 1000)
-
       // Update the match's match day
       const updatedMatches = matches.map((match) => {
         if (match.id === matchId) {
@@ -280,10 +140,9 @@ export default function Schedule() {
         <button
           onClick={handleExportSchedule}
           className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-600 transition-colors"
-          disabled={isLoading}
         >
           <FileDown className="h-5 w-5" />
-          <span>{isLoading ? "Exporting..." : "Export Schedule"}</span>
+          <span>Export Schedule</span>
         </button>
 
         <button className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
@@ -340,7 +199,7 @@ export default function Schedule() {
             return (
               <div
                 key={matchDayId}
-                className={`bg-white rounded-lg shadow overflow-hidden transition-opacity duration-300 ${isLoading ? "opacity-60" : "opacity-100"}`}
+                className={`bg-white rounded-lg shadow overflow-hidden transition-opacity duration-300 opacity-100`}
                 onDragOver={handleDragOver}
               >
                 <div className="bg-emerald-500 text-white px-6 py-3 flex items-center justify-between">

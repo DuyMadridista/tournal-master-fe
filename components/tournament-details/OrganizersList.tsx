@@ -44,7 +44,7 @@ export default function OrganizersList({ organizers, onOrganizersChange, tournam
     setIsLoading(true)
     setError(null)
     try {
-      const response = await axios.get('http://localhost:6969/organizer/getAllOrganizer', {
+      const response = await axios.get('http://localhost:6969/api/organizer/getAllOrganizer', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -106,7 +106,7 @@ export default function OrganizersList({ organizers, onOrganizersChange, tournam
 
       // Make API call to update organizers
       await axios.put(
-        `http://localhost:6969/tournament/${tournamentId}/detail`,
+        `http://localhost:6969/api/tournament/${tournamentId}/detail`,
         { organizers: organizerIds },
         {
           headers: {

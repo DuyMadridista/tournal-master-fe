@@ -125,7 +125,7 @@ export default function MatchDaysManager({
 
       // Make API call to update event dates
       await axios.put(
-        `http://localhost:6969/tournament/${effectiveTournamentId}/detail`,
+        `http://localhost:6969/api/tournament/${effectiveTournamentId}/detail`,
         { eventDates },
         {
           headers: {

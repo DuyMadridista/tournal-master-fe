@@ -765,7 +765,7 @@ export default function LandingPage() {
           </div>
           <div className="border-t border-neutral-800 pt-8 mt-8 text-sm">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <p>&copy; 2023 Tourna Master. All rights reserved.</p>
+              <p>&copy; 2025 Tourna Master. All rights reserved.</p>
               <div className="flex space-x-6 mt-4 md:mt-0">
                 <a href="#" className="hover:text-white">
                   Terms of Service
