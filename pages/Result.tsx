@@ -79,7 +79,7 @@ export default function Result({ tournamentId }: ResultProps) {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const response = await fetch(`http://localhost:6969/api/tournament/${tournamentId}/match/updateResult/${matchId}`,
+      const response = await fetch(`http://3.107.198.142/api/tournament/${tournamentId}/match/updateResult/${matchId}`,
         {
           method: 'PUT',
           headers: {
@@ -134,7 +134,7 @@ export default function Result({ tournamentId }: ResultProps) {
       const tournament= await getTournamentById(tournamentId)
       setTournament(tournament.data)
       
-      const response = await fetch(`http://localhost:6969/api/tournament/${tournamentId}/match/result`);
+      const response = await fetch(`http://3.107.198.142/api/tournament/${tournamentId}/match/result`);
       const data: ApiMatchResponse = await response.json();
       const allMatches: Match[] = data.data.flatMap(group =>
         group.matches.map(match => ({
