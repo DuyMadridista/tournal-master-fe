@@ -125,7 +125,7 @@ export default function MatchDaysManager({
 
       // Make API call to update event dates
       await axios.put(
-        `http://3.107.198.142/api/tournament/${effectiveTournamentId}/detail`,
+        `https://halamadrid.me/api/tournament/${effectiveTournamentId}/detail`,
         { eventDates },
         {
           headers: {

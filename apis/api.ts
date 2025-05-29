@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://3.107.198.142/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://halamadrid.me/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
