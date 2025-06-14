@@ -6,6 +6,7 @@ import { useDataFetching } from "../../context/DataFetchingContext"
 import LoadingSpinner from "../ui-elements/LoadingSpinner"
 import api from "@/apis/api"
 import { getLocalStorage } from "@/utils/localStorage"
+import { canEdit } from "@/utils/roleUtils"
 
 interface Player {
   id: string
@@ -293,14 +294,18 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => setIsAddingPlayer(true)} className="btn btn-primary p-2 flex items-center space-x-2">
-              <Plus className="h-5 w-5" />
-              <span>Add Player</span>
-            </button>
-            <button onClick={handleImportPlayers} className="btn btn-secondary px-2 py-3 flex items-center space-x-2" disabled={importLoading}>
-              <Plus className="h-5 w-5" />
-              <span>{importLoading ? "Importing..." : "Import Player"}</span>
-            </button>
+            {canEdit() && (
+              <button onClick={() => setIsAddingPlayer(true)} className="btn btn-primary p-2 flex items-center space-x-2">
+                <Plus className="h-5 w-5" />
+                <span>Add Player</span>
+              </button>
+            )}
+            {canEdit() && (
+              <button onClick={handleImportPlayers} className="btn btn-secondary px-2 py-3 flex items-center space-x-2" disabled={importLoading}>
+                <Plus className="h-5 w-5" />
+                <span>{importLoading ? "Importing..." : "Import Player"}</span>
+              </button>
+            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -394,7 +399,9 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
               <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Number</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Phone Number</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date of Birth</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Action</th>
+              {canEdit() && (
+                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Action</th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-neutral-200">
@@ -464,22 +471,24 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
                       <td className="px-6 py-4 whitespace-nowrap">{player.number}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{player.phone}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{formatDate(player.dateOfBirth)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                          <button
-                            onClick={() => startEditingPlayer(player)}
-                            className="text-primary-600 hover:text-primary-900"
-                          >
-                            <Edit className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeletePlayer(player.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </td>
+                      {canEdit() && (
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end space-x-2">
+                            <button
+                              onClick={() => startEditingPlayer(player)}
+                              className="text-primary-600 hover:text-primary-900"
+                            >
+                              <Edit className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePlayer(player.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </>
                   )}
                 </tr>

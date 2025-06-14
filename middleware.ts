@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
 
   // Define public paths that don't require authentication
-  const publicPaths = ['/landing', '/login', '/signup']
+  const publicPaths = ['/landing', '/login', '/signup', '/oauthCallback']
   const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   // Check if the request is for the root path

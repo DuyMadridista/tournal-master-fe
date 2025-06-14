@@ -14,6 +14,7 @@ import PDFDateResult from "../utils/PDFDateResult"
 import { Upload } from "@mui/icons-material"
 import { getLocalStorage } from "@/utils/localStorage"
 import { toast } from "react-toastify"
+import { canEdit } from "@/utils/roleUtils"
 const token = getLocalStorage('token');
 
 // API response types
@@ -79,7 +80,7 @@ export default function Result({ tournamentId }: ResultProps) {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const response = await fetch(`https://halamadrid.me/api/tournament/${tournamentId}/match/updateResult/${matchId}`,
+      const response = await fetch(`http://localhost:6969/api/tournament/${tournamentId}/match/updateResult/${matchId}`,
         {
           method: 'PUT',
           headers: {
@@ -134,7 +135,7 @@ export default function Result({ tournamentId }: ResultProps) {
       const tournament= await getTournamentById(tournamentId)
       setTournament(tournament.data)
       
-      const response = await fetch(`https://halamadrid.me/api/tournament/${tournamentId}/match/result`);
+      const response = await fetch(`http://localhost:6969/api/tournament/${tournamentId}/match/result`);
       const data: ApiMatchResponse = await response.json();
       const allMatches: Match[] = data.data.flatMap(group =>
         group.matches.map(match => ({
@@ -370,14 +371,14 @@ export default function Result({ tournamentId }: ResultProps) {
                             ref={el => (fileInputRefs.current[match.id] = el)}
                             onChange={() => handleUpdateResult(match.id)}
                           />
-                          <button
+                          {canEdit() && (<button
                             className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-1.5"
                             onClick={() => triggerFileInput(match.id)}
                             type="button"
                           >
                             <Upload className="h-4 w-4" />
                             <span className="text-sm font-medium">Update result</span>
-                          </button>
+                          </button>)}
                           </div>)}
                         </div>
 

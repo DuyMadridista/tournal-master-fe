@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "../../components/ui/dialog"
 import { toast } from "react-toastify"
+import { canEdit } from "@/utils/roleUtils"
 
 // Define tournament format types
 type TournamentFormat = "KNOCKOUT" | "GROUP_STAGE" | "LEAGUE"
@@ -117,6 +118,8 @@ function getStatusLabel(status: Tournament['status']) {
     const fetchCategories = async () => {
       try {
         const token = getLocalStorage("token")
+        const user = getLocalStorage("user")
+        console.log("User:", JSON.parse(user || "{}"));
         const res = await api.get("/category", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -451,10 +454,12 @@ function getStatusLabel(status: Tournament['status']) {
       <PageHeader title="Tournament Management" description="Create and manage your tournaments">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <button className="btn btn-primary flex items-center space-x-2">
-              <Plus className="h-5 w-5" />
-              <span>Create New Tournament</span>
-            </button>
+            {canEdit() && (
+              <button className="btn btn-primary flex items-center space-x-2">
+                <Plus className="h-5 w-5" />
+                <span>Create New Tournament</span>
+              </button>
+            )}
           </DialogTrigger>
           <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-lg border border-neutral-200">
             <DialogHeader>
@@ -784,7 +789,8 @@ function getStatusLabel(status: Tournament['status']) {
                     <Eye className="h-5 w-5" />
                     <span>View Details</span>
                   </Link>
-                  <div className="flex gap-2">
+                  {canEdit()&&(
+                    <div className="flex gap-2">
                     <button
                       onClick={() => openDeleteDialog(tournament.id)}
                       className="btn btn-outline text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center justify-center"
@@ -792,6 +798,8 @@ function getStatusLabel(status: Tournament['status']) {
                       <Trash className="h-5 w-5" />
                     </button>
                   </div>
+                  )}
+                  
                 </div>
               </div>
             </div>

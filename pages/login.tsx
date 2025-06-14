@@ -12,6 +12,7 @@ export interface LoginForm {
 
 import * as Yup from 'yup'
 import Link from 'next/link'
+import GoogleLoginButton from '@/components/ui-elements/GoogleLoginButton'
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -194,6 +195,7 @@ const Login: React.FC = () => {
                   Sign Up
                 </Link>
               </div>
+              <GoogleLoginButton />
             </Form>
           )}
         </Formik>

@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { Calendar, Plus, Save, X, Check, Info, AlertTriangle } from "lucide-react"
 import { useDataFetching } from "../../context/DataFetchingContext"
 import axios from "axios"
+import { canEdit } from "@/utils/roleUtils"
 
 interface MatchDay {
   id: string
@@ -125,7 +126,7 @@ export default function MatchDaysManager({
 
       // Make API call to update event dates
       await axios.put(
-        `https://halamadrid.me/api/tournament/${effectiveTournamentId}/detail`,
+        `http://localhost:6969/api/tournament/${effectiveTournamentId}/detail`,
         { eventDates },
         {
           headers: {
@@ -238,12 +239,15 @@ export default function MatchDaysManager({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-neutral-800">Match Days</h3>
-        <div className="flex space-x-2 p-2">
-          <button onClick={() => setIsAddingNew(true)} className="btn btn-sm bg-green-600 text-white hover:bg-green-700 flex items-center space-x-1 p-2">
-            <Plus className="h-4 w-4" />
-            <span>Add Match Day</span>
-          </button>
-        </div>
+        {canEdit() && (
+          <div className="flex space-x-2 p-2">
+            <button onClick={() => setIsAddingNew(true)} className="btn btn-sm bg-green-600 text-white hover:bg-green-700 flex items-center space-x-1 p-2">
+              <Plus className="h-4 w-4" />
+              <span>Add Match Day</span>
+            </button>
+          </div>
+        )}
+       
       </div>
 
       {isAddingNew && (
@@ -344,12 +348,14 @@ export default function MatchDaysManager({
                   >
                     Date
                   </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
+                  {canEdit() && (
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-neutral-200">
@@ -359,14 +365,16 @@ export default function MatchDaysManager({
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
                         {formatDateShort(day.date)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                          <button
-                            onClick={() => toggleExpandDay(day.id)}
-                            className="text-primary-600 hover:text-primary-900"
-                          >
-                            {expandedDay === day.id ? "Hide" : "Edit"}
-                          </button>
+                      {canEdit() && (
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end space-x-2">
+                            <button
+                              onClick={() => toggleExpandDay(day.id)}
+                              className="text-primary-600 hover:text-primary-900"
+                            >
+                              {expandedDay === day.id ? "Hide" : "Edit"}
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDeleteMatchDay(day.id)}
                             className="text-red-600 hover:text-red-900"
@@ -376,6 +384,7 @@ export default function MatchDaysManager({
                           </button>
                         </div>
                       </td>
+                      )}
                     </tr>
                     {expandedDay === day.id && (
                       <tr className="bg-neutral-50">

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import axios from "axios"
-import { Clock, MapPin, Award, Shirt, ArrowRightLeft } from "lucide-react"
+import { Clock, MapPin, Award, Shirt, ArrowRightLeft, Edit } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { canEdit } from "@/utils/roleUtils"
 
 interface Player {
   id: string
@@ -71,7 +72,7 @@ export default function MatchDetailTabs({ matchId }: { matchId: string }) {
       setLoading(true)
       setError(null)
       try {
-        const res = await axios.get(`https://halamadrid.me/api/tournament/31/match/result/${matchId}`)
+        const res = await axios.get(`http://localhost:6969/api/tournament/31/match/result/${matchId}`)
         const data = res.data.data
         const matchData = data.match
         const players = data.listPlayerMatch
@@ -203,6 +204,12 @@ export default function MatchDetailTabs({ matchId }: { matchId: string }) {
       {/* Match header */}
       <div className="bg-primary-500 text-white p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+          {canEdit() && (
+            <button className="flex items-center gap-1 text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md mb-2 md:mb-0">
+              <Edit className="h-3.5 w-3.5" />
+              <span>Edit Match</span>
+            </button>
+          )}
           <div className="flex items-center space-x-2 text-primary-100">
             <Clock className="h-4 w-4" />
             <span>

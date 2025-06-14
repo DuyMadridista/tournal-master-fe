@@ -11,6 +11,7 @@ import api, { getTournamentById } from '../apis/api'
 import { getLocalStorage } from "@/utils/localStorage"
 import React from "react"
 import { toast } from "react-toastify";
+import { canEdit } from "@/utils/roleUtils"
 
 
 interface ParticipantsProps {
@@ -236,7 +237,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
 
   const handleEditTeam = (teamId: string) => {
     // In a real app, this would open a modal or form with the team details
-    alert(`Edit team with ID: ${teamId}`)
+    //alert(`Edit team with ID: ${teamId}`)
   }
 
   // State for delete confirmation popup
@@ -313,7 +314,9 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
         onSearch={setSearchQuery}
         showFilter={true}
       >
-        <button
+        {canEdit() && (<>
+        
+          <button
           onClick={() => setShowAddForm(true)}
           className="btn btn-md btn-primary flex items-center space-x-2"
           disabled={isLoading}
@@ -330,6 +333,9 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
           <FileUp className="h-5 w-5" />
           <span>{importLoading ? "Importing..." : "Import Teams"}</span>
         </button>
+        </>
+      )}
+        
         <input
           ref={fileInputRef}
           type="file"
@@ -441,7 +447,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
               <th className="table-head">Leader Email</th>
               <th className="table-head">Phone Number</th>
               <th className="table-head">Players</th>
-              <th className="table-head">Actions</th>
+              {canEdit() && (<th className="table-head">Actions</th>)}
             </tr>
           </thead>
           <tbody className="table-body">
@@ -484,7 +490,8 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
                       <span className="text-neutral-700">{team.playerCount}</span>
                     </button>
                   </td>
-                  <td className="table-cell">
+                  { canEdit() && (
+                    <td className="table-cell">
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEditTeam(team.id)}
@@ -502,6 +509,8 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
                       </button>
                     </div>
                   </td>
+                  )}
+                  
                 </tr>
               ))
             )}
