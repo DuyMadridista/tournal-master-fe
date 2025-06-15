@@ -142,7 +142,7 @@ export default function MatchDaysManager({
   }
 
   const handleAddMatchDay = async () => {
-    if (!newMatchDay.date || !newMatchDay.name) return
+    if (!newMatchDay.date) return
 
     try {
       const matchDay: MatchDay = {
@@ -270,7 +270,7 @@ export default function MatchDaysManager({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">Name (optional)</label>
               <input
                 type="text"
                 value={newMatchDay.name}
@@ -313,7 +313,7 @@ export default function MatchDaysManager({
             <button
               onClick={handleAddMatchDay}
               className="btn btn-sm bg-primary-600 text-white hover:bg-primary-700 flex items-center space-x-1"
-              disabled={isLoading || !newMatchDay.date || !newMatchDay.name}
+              disabled={isLoading || !newMatchDay.date }
             >
               <Save className="h-4 w-4" />
               <span>{isLoading ? "Saving..." : "Save"}</span>
@@ -374,7 +374,6 @@ export default function MatchDaysManager({
                             >
                               {expandedDay === day.id ? "Hide" : "Edit"}
                             </button>
-                          )}
                           <button
                             onClick={() => handleDeleteMatchDay(day.id)}
                             className="text-red-600 hover:text-red-900"

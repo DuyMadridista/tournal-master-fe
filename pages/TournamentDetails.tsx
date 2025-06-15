@@ -13,6 +13,7 @@ import { AlertTriangle, Info, Calendar, MapPin, Users, FileText } from "lucide-r
 
 import { useEffect } from "react"
 import axios from "axios"
+import { Place } from "@mui/icons-material"
 // ...keep other imports
 
 
@@ -69,6 +70,7 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
           format: data.format === "ROUND_ROBIN" ? "Round Robin" : (data.format || ""),
           location: data.place || "",
           description: data.description || "",
+          numberOfFields: data.numberOfFields || 1,
           startDate: (() => {
             if (data.eventDates && data.eventDates.length > 0) {
               const sorted = [...data.eventDates].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -219,7 +221,7 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
               <FormatSelector selectedFormat={tournament.format} onFormatChange={handleFormatChange} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="flex items-start space-x-3">
                 <div className="mt-1 text-primary-500">
                   <Users className="h-5 w-5" />
@@ -231,7 +233,6 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
                   onSave={(value) => handleTournamentChange("numberOfPlayers", Number(value))}
                 />
               </div>
-
               <div className="flex items-start space-x-3">
                 <div className="mt-1 text-primary-500">
                   <MapPin className="h-5 w-5" />
@@ -242,6 +243,17 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
                   onSave={(value) => handleTournamentChange("location", value)}
                 />
               </div>
+              <div className="flex items-start space-x-3">
+                <div className="mt-1 text-primary-500">
+                  <Place className="h-5 w-5" />
+                </div>
+                                <EditableField
+                  label="Number of Fields"
+                  value={tournament.numberOfFields || 1}
+                  onSave={(value) => handleTournamentChange("numberOfFields", Number(value))}
+                />
+              </div>
+
             </div>
 
             {tournament.format === "GROUP_STAGE" && tournament.groupStageSettings && (

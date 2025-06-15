@@ -19,6 +19,7 @@ export interface Tournament {
   matchDays?: MatchDay[]
   progress?: number
   totalMatch?: number
+  numberOfFields?: number
   totalTeam?: number
   totalPlayer?: number
   totalEventDate?: number

@@ -168,7 +168,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
       toast.success("The team was added successfully.");
     } catch (error: any) {
       setError("Failed to add team");
-      toast.error((error && (error.message || error.toString())) || "Failed to add team.");
+      toast.error((error && (error?.response?.data?.message || error.toString())) || "Failed to add team.");
       console.error("Failed to add team:", error);
     } finally {
       setIsLoading(false);
@@ -204,7 +204,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
       toast.success("Teams were imported successfully.");
     } catch (error) {
       setError("Failed to import teams");
-      toast.error((error && (error.message || error.toString())) || "Failed to import teams.");
+      toast.error((error && (error?.response?.data?.message || error.toString())) || "Failed to import teams.");
       console.error("Failed to import teams:", error);
     } finally {
       setImportLoading(false);
@@ -228,7 +228,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
       toast.success("Groups were generated successfully.");
     } catch (error) {
       setError("Failed to generate groups");
-      toast.error((error && (error.message || error.toString())) || "Failed to generate groups.");
+      toast.error((error && (error.response.data.message || error.toString())) || "Failed to generate groups.");
       console.error("Failed to generate groups:", error);
     } finally {
       setIsLoading(false);
@@ -265,7 +265,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
       toast.success("The team was deleted successfully.");
     } catch (error) {
       setError("Failed to delete team");
-      toast.error((error && (error.message || error.toString())) || "Failed to delete team.");
+      toast.error((error && (error?.response?.data?.message || error.toString())) || "Failed to delete team.");
       console.error("Failed to delete team:", error);
     } finally {
       setDeleteLoading(false);

@@ -38,7 +38,7 @@ export default function EditableField({ label, value, onSave, type = "text", cla
 
       {!isEditing ? (
         <div className={`flex items-center justify-between p-2 rounded-md ${isHovered ? "bg-primary-50/50" : ""}`}>
-          <div className="text-base font-medium">
+          <div className="text-center font-medium text-neutral-800">
             {type === "textarea" ? <div className="whitespace-pre-wrap">{value}</div> : value}
           </div>
           <button

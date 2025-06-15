@@ -7,6 +7,7 @@ import LoadingSpinner from "../ui-elements/LoadingSpinner"
 import api from "@/apis/api"
 import { getLocalStorage } from "@/utils/localStorage"
 import { canEdit } from "@/utils/roleUtils"
+import { toast } from "react-toastify"
 
 interface Player {
   id: string
@@ -92,7 +93,7 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
       }
       // Optionally show a toast here for success
     } catch (error: any) {
-      setImportError((error && (error.message || error.toString())) || "Failed to import players.");
+      setImportError((error && (error?.response?.data?.message || error.toString())) || "Failed to import players.");
       // Optionally show a toast here for error
     } finally {
       setImportLoading(false);
@@ -175,11 +176,11 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
         });
         setFormErrors({});
       } else {
-        alert("Failed to add player: No player data returned from API.");
+        toast.error("Failed to add player: No player data returned from API.");
       }
-    } catch (error) {
-      console.error("Failed to add player:", error);
-      alert("Failed to add player. Please try again.");
+    } catch (error: any) {
+      console.error("Failed to add player:", error.response.data.message);
+     toast.error("Failed to add player. Please try again.");
     }
   };
 
@@ -198,7 +199,7 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
   };
 
   const handleDeletePlayer = async (playerId: string) => {
-    if (window.confirm("Are you sure you want to delete this player?")) {
+    // if (window.confirm("Are you sure you want to delete this player?")) {
       try {
         // Simulate API call
         await simulateFetch(null, 1000)
@@ -207,7 +208,7 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
       } catch (error) {
         console.error("Failed to delete player:", error)
       }
-    }
+    // }
   }
 
   const startEditingPlayer = (player: Player) => {

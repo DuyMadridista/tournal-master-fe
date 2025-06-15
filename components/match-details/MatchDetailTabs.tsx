@@ -204,12 +204,12 @@ export default function MatchDetailTabs({ matchId }: { matchId: string }) {
       {/* Match header */}
       <div className="bg-primary-500 text-white p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-          {canEdit() && (
+          {/* {canEdit() && (
             <button className="flex items-center gap-1 text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md mb-2 md:mb-0">
               <Edit className="h-3.5 w-3.5" />
               <span>Edit Match</span>
             </button>
-          )}
+          )} */}
           <div className="flex items-center space-x-2 text-primary-100">
             <Clock className="h-4 w-4" />
             <span>
@@ -224,7 +224,7 @@ export default function MatchDetailTabs({ matchId }: { matchId: string }) {
             )}
           </div>
           <div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-700 text-white">
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${match.completed ? "bg-green-500" : "bg-yellow-500"}`}>
               {match.completed ? "Completed" : "Upcoming"}
             </span>
           </div>

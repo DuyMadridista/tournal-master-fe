@@ -7,6 +7,8 @@ interface GroupStageSettingsProps {
 }
 
 export default function GroupStageSettings({ settings, onSettingsChange }: GroupStageSettingsProps) {
+  console.log("GroupStageSettings", settings);
+  
   const handleChange = (field: keyof GroupStageSettingsType, value: number) => {
     if (onSettingsChange) {
       onSettingsChange({

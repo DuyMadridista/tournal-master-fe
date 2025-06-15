@@ -174,7 +174,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
         // Các trường hợp lỗi khác hoặc không có message
         toast.error(
           apiMessage ||
-          error.message ||
+          error?.response?.data?.message ||
           'Error generating schedule'
         );
       }
