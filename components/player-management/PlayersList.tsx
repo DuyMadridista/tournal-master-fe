@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Edit, Trash, Plus, Search, X, Save } from "lucide-react"
+import { User, Edit, Trash, Plus, Search, X, Save, FileDown } from "lucide-react"
 import { useDataFetching } from "../../context/DataFetchingContext"
 import LoadingSpinner from "../ui-elements/LoadingSpinner"
 import api from "@/apis/api"
@@ -106,7 +106,7 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
     const fetchPlayers = async () => {
       setIsLoading(true);
       try {
-        const res= await api.get(`/tournament/${tournamentId}/team/${team.id}/player`, {
+        const res = await api.get(`/tournament/${tournamentId}/team/${team.id}/player`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -180,7 +180,7 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
       }
     } catch (error: any) {
       console.error("Failed to add player:", error.response.data.message);
-     toast.error("Failed to add player. Please try again.");
+      toast.error("Failed to add player. Please try again.");
     }
   };
 
@@ -200,14 +200,14 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
 
   const handleDeletePlayer = async (playerId: string) => {
     // if (window.confirm("Are you sure you want to delete this player?")) {
-      try {
-        // Simulate API call
-        await simulateFetch(null, 1000)
+    try {
+      // Simulate API call
+      await simulateFetch(null, 1000)
 
-        setPlayers(players.filter((player) => player.id !== playerId))
-      } catch (error) {
-        console.error("Failed to delete player:", error)
-      }
+      setPlayers(players.filter((player) => player.id !== playerId))
+    } catch (error) {
+      console.error("Failed to delete player:", error)
+    }
     // }
   }
 
@@ -307,6 +307,16 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
                 <span>{importLoading ? "Importing..." : "Import Player"}</span>
               </button>
             )}
+            {canEdit() && (
+              <a
+                href="/template/sample_players.xlsx"
+                download
+                className="btn btn-md btn-outline flex items-center space-x-2"
+              >
+                <FileDown className="h-5 w-5" />
+                <span>Download Template</span>
+              </a>
+            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -320,75 +330,75 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
 
         {isAddingPlayer && (
           <div className="bg-white border border-neutral-200 rounded-2xl shadow-lg p-0 mb-6 animate-in">
-  <div className="bg-green-600 rounded-t-2xl px-6 py-4 flex items-center">
-    <h3 className="text-lg font-bold text-white tracking-wide">Add New Player</h3>
-  </div>
-  <form className="px-6 py-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div>
-        <label className="block text-base font-medium text-neutral-800 mb-2">Full Name <span className="text-red-500">*</span></label>
-        <input
-          type="text"
-          value={newPlayer.playerName || ""}
-          onChange={(e) => setNewPlayer({ ...newPlayer, playerName: e.target.value })}
-          className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.playerName ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
-          placeholder="Full name"
-        />
-        {formErrors.playerName && (
-          <div className="text-red-500 text-xs mt-1">{formErrors.playerName}</div>
-        )}
-      </div>
-      <div>
-        <label className="block text-base font-medium text-neutral-800 mb-2">Number <span className="text-red-500">*</span></label>
-        <input
-          type="number"
-          value={newPlayer.number || ""}
-          onChange={(e) => setNewPlayer({ ...newPlayer, number: Number.parseInt(e.target.value) })}
-          className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.number ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
-          placeholder="Jersey number"
-        />
-        {formErrors.number && (
-          <div className="text-red-500 text-xs mt-1">{formErrors.number}</div>
-        )}
-      </div>
-      <div>
-        <label className="block text-base font-medium text-neutral-800 mb-2">Phone Number <span className="text-red-500">*</span></label>
-        <input
-          type="text"
-          value={newPlayer.phone || ""}
-          onChange={(e) => setNewPlayer({ ...newPlayer, phone: e.target.value })}
-          className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.phone ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
-          placeholder="Phone number"
-        />
-        {formErrors.phone && (
-          <div className="text-red-500 text-xs mt-1">{formErrors.phone}</div>
-        )}
-      </div>
-      <div>
-        <label className="block text-base font-medium text-neutral-800 mb-2">Date of Birth <span className="text-red-500">*</span></label>
-        <input
-          type="date"
-          value={newPlayer.dateOfBirth || ""}
-          onChange={(e) => setNewPlayer({ ...newPlayer, dateOfBirth: e.target.value })}
-          className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.dateOfBirth ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
-          placeholder="YYYY-MM-DD"
-        />
-        {formErrors.dateOfBirth && (
-          <div className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</div>
-        )}
-      </div>
-    </div>
-    <div className="flex justify-end gap-3 mt-2">
-      <button type="button" onClick={() => setIsAddingPlayer(false)} className="btn btn-outline px-6 py-2 rounded-lg text-base">
-        Cancel
-      </button>
-      <button type="button" onClick={handleAddPlayer} className="btn btn-primary flex items-center space-x-2 px-6 py-2 rounded-lg text-base">
-        <Save className="h-5 w-5" />
-        <span>Save Player</span>
-      </button>
-    </div>
-  </form>
-</div>
+            <div className="bg-green-600 rounded-t-2xl px-6 py-4 flex items-center">
+              <h3 className="text-lg font-bold text-white tracking-wide">Add New Player</h3>
+            </div>
+            <form className="px-6 py-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-base font-medium text-neutral-800 mb-2">Full Name <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={newPlayer.playerName || ""}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, playerName: e.target.value })}
+                    className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.playerName ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
+                    placeholder="Full name"
+                  />
+                  {formErrors.playerName && (
+                    <div className="text-red-500 text-xs mt-1">{formErrors.playerName}</div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-base font-medium text-neutral-800 mb-2">Number <span className="text-red-500">*</span></label>
+                  <input
+                    type="number"
+                    value={newPlayer.number || ""}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, number: Number.parseInt(e.target.value) })}
+                    className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.number ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
+                    placeholder="Jersey number"
+                  />
+                  {formErrors.number && (
+                    <div className="text-red-500 text-xs mt-1">{formErrors.number}</div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-base font-medium text-neutral-800 mb-2">Phone Number <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    value={newPlayer.phone || ""}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, phone: e.target.value })}
+                    className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.phone ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
+                    placeholder="Phone number"
+                  />
+                  {formErrors.phone && (
+                    <div className="text-red-500 text-xs mt-1">{formErrors.phone}</div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-base font-medium text-neutral-800 mb-2">Date of Birth <span className="text-red-500">*</span></label>
+                  <input
+                    type="date"
+                    value={newPlayer.dateOfBirth || ""}
+                    onChange={(e) => setNewPlayer({ ...newPlayer, dateOfBirth: e.target.value })}
+                    className={`input text-base py-2 px-3 border rounded-lg focus:ring-2 w-full ${formErrors.dateOfBirth ? 'border-red-500 focus:ring-red-300' : 'border-neutral-300 focus:ring-primary-300'}`}
+                    placeholder="YYYY-MM-DD"
+                  />
+                  {formErrors.dateOfBirth && (
+                    <div className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</div>
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-2">
+                <button type="button" onClick={() => setIsAddingPlayer(false)} className="btn btn-outline px-6 py-2 rounded-lg text-base">
+                  Cancel
+                </button>
+                <button type="button" onClick={handleAddPlayer} className="btn btn-primary flex items-center space-x-2 px-6 py-2 rounded-lg text-base">
+                  <Save className="h-5 w-5" />
+                  <span>Save Player</span>
+                </button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
 
@@ -494,6 +504,7 @@ export default function PlayersList({ tournamentId, team, onClose }: PlayersList
                   )}
                 </tr>
               ))
+
             )}
           </tbody>
         </table>

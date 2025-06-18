@@ -110,31 +110,31 @@ export default function Result({ tournamentId }: ResultProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [tournament, setTournament]= useState<Tournament | null>(null)
+  const [tournament, setTournament] = useState<Tournament | null>(null)
   const [viewMode, setViewMode] = useState<"list" | "bracket">("list")
-  
+
   // Organize knockout matches by rounds
   const organizedKnockoutMatches = React.useMemo(() => {
     if (!knockoutMatches.length) return { final: [], semiFinals: [], quarterFinals: [], earlier: [] };
-    
+
     // Sort matches by date (assuming newer matches are later stages)
     const sortedMatches = [...knockoutMatches].sort((a, b) => b.date.getTime() - a.date.getTime());
-    
+
     // Take first match as final, next two as semifinals, next four as quarterfinals
     const final = sortedMatches.slice(0, 1);
     const semiFinals = sortedMatches.slice(1, 3);
     const quarterFinals = sortedMatches.slice(3, 7);
     const earlier = sortedMatches.slice(7);
-    
+
     return { final, semiFinals, quarterFinals, earlier };
   }, [knockoutMatches]);
-  
+
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const tournament= await getTournamentById(tournamentId)
+      const tournament = await getTournamentById(tournamentId)
       setTournament(tournament.data)
-      
+
       const response = await fetch(`https://halamadrid.me/api/tournament/${tournamentId}/match/result`);
       const data: ApiMatchResponse = await response.json();
       const allMatches: Match[] = data.data.flatMap(group =>
@@ -157,7 +157,7 @@ export default function Result({ tournamentId }: ResultProps) {
         }))
       );
       setGroupMatches(allMatches);
-      setKnockoutMatches(allMatches.filter(match => match.type === "KNOCKOUT")); 
+      setKnockoutMatches(allMatches.filter(match => match.type === "KNOCKOUT"));
     } catch (error) {
       console.error("Failed to load match data:", error);
     } finally {
@@ -189,16 +189,16 @@ export default function Result({ tournamentId }: ResultProps) {
   }, [tournamentId]);
 
   const matches = tournament?.format?.toString() === TournamentFormat.SingleElimination ? knockoutMatches : groupMatches;
-  
+
   const filteredMatches = matches.filter(
     (match) =>
       match.team1.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       match.team2.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (match.venue && match.venue.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (match.round && match.round.toLowerCase().includes(searchQuery.toLowerCase())), 
+      (match.round && match.round.toLowerCase().includes(searchQuery.toLowerCase())),
   )
 
-  
+
   const groupedMatches = groupMatchesByDate(filteredMatches)
 
   const handleScoreChange = (matchId: string, team: "team1" | "team2", score: number) => {
@@ -258,7 +258,15 @@ export default function Result({ tournamentId }: ResultProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <ActionToolbar title="Results" totalItems={matches.length } onSearch={setSearchQuery}>
+      <ActionToolbar title="Results" totalItems={matches.length} onSearch={setSearchQuery}>
+        <a
+          href="/template/Match_Report_Template.xlsx"
+          download
+          className="btn btn-md btn-outline flex items-center space-x-2"
+        >
+          <FileDown className="h-5 w-5" />
+          <span>Download Template</span>
+        </a>
         <PDFDownloadLink
           style={{ color: 'green', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
           document={
@@ -279,30 +287,30 @@ export default function Result({ tournamentId }: ResultProps) {
           )}
         </PDFDownloadLink>
 
-          {tournament.format?.toString() === TournamentFormat.GroupStage && (
-            <div className="flex justify-end">
-              <div className="inline-flex rounded-md shadow-sm" role="group">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("list")}
-                  className={`px-4 py-2 text-sm font-medium rounded-l-lg ${viewMode === "list" 
-                    ? "bg-primary-500 text-white" 
-                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"}`}
-                >
-                  Group Stage
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("bracket")}
-                  className={`px-4 py-2 text-sm font-medium rounded-r-lg ${viewMode === "bracket" 
-                    ? "bg-primary-500 text-white" 
-                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"}`}
-                >
-                  Knockout
-                </button>
-              </div>
+        {tournament.format?.toString() === TournamentFormat.GroupStage && (
+          <div className="flex justify-end">
+            <div className="inline-flex rounded-md shadow-sm" role="group">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`px-4 py-2 text-sm font-medium rounded-l-lg ${viewMode === "list"
+                  ? "bg-primary-500 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"}`}
+              >
+                Group Stage
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("bracket")}
+                className={`px-4 py-2 text-sm font-medium rounded-r-lg ${viewMode === "bracket"
+                  ? "bg-primary-500 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"}`}
+              >
+                Knockout
+              </button>
             </div>
-          )}
+          </div>
+        )}
       </ActionToolbar>
 
       {/* Match Details View */}
@@ -319,7 +327,7 @@ export default function Result({ tournamentId }: ResultProps) {
       )}
 
       {!selectedMatch && ((tournament.format?.toString() === TournamentFormat.GroupStage && viewMode === "list") || tournament.format?.toString() === TournamentFormat.RoundRobin) && (
-            <div className="space-y-8">
+        <div className="space-y-8">
           {Object.keys(groupedMatches)
             .sort()
             .map((dateStr) => (
@@ -359,26 +367,26 @@ export default function Result({ tournamentId }: ResultProps) {
                       </div>
                       <div className="mt-3 grid grid-cols-5 gap-4 items-center">
                         {/* Update Result Button */}
-                        
-                        <div className="col-span-5 md:col-span-1 flex justify-center md:justify-end">
-                          {match.team1?.name !== "Tobe decided..." &&(<div>
 
-                          
-                          <input
-                            type="file"
-                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            style={{ display: 'none' }}
-                            ref={el => (fileInputRefs.current[match.id] = el)}
-                            onChange={() => handleUpdateResult(match.id)}
-                          />
-                          {canEdit() && (<button
-                            className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-1.5"
-                            onClick={() => triggerFileInput(match.id)}
-                            type="button"
-                          >
-                            <Upload className="h-4 w-4" />
-                            <span className="text-sm font-medium">Update result</span>
-                          </button>)}
+                        <div className="col-span-5 md:col-span-1 flex justify-center md:justify-end">
+                          {match.team1?.name !== "Tobe decided..." && (<div>
+
+
+                            <input
+                              type="file"
+                              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                              style={{ display: 'none' }}
+                              ref={el => (fileInputRefs.current[match.id] = el)}
+                              onChange={() => handleUpdateResult(match.id)}
+                            />
+                            {canEdit() && (<button
+                              className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center space-x-1.5"
+                              onClick={() => triggerFileInput(match.id)}
+                              type="button"
+                            >
+                              <Upload className="h-4 w-4" />
+                              <span className="text-sm font-medium">Update result</span>
+                            </button>)}
                           </div>)}
                         </div>
 
@@ -431,7 +439,7 @@ export default function Result({ tournamentId }: ResultProps) {
                 </div>
               </div>
             ))}
-            </div>
+        </div>
 
       )}
 
@@ -445,12 +453,12 @@ export default function Result({ tournamentId }: ResultProps) {
               <div className="flex justify-around">
                 {/* Quarter-finals */}
                 {organizedKnockoutMatches.quarterFinals.length > 0 && (
-                <div className="flex flex-col space-y-16">
-                  <div className="text-center mb-2">
-                    <span className="text-sm font-medium text-gray-500">Quarter-finals</span>
-                  </div>
+                  <div className="flex flex-col space-y-16">
+                    <div className="text-center mb-2">
+                      <span className="text-sm font-medium text-gray-500">Quarter-finals</span>
+                    </div>
 
-                  {organizedKnockoutMatches.quarterFinals.map((match) => (
+                    {organizedKnockoutMatches.quarterFinals.map((match) => (
                       <div key={match.id} className="w-64 border border-gray-200 rounded-lg p-3">
                         <div className="text-xs text-gray-500 mb-2">
                           {match.date.toLocaleDateString()} • {match.startTime} - {match.endTime}
@@ -477,16 +485,16 @@ export default function Result({ tournamentId }: ResultProps) {
                         </div>
                       </div>
                     ))}
-                </div>
+                  </div>
                 )}
                 {/* Semi-finals */}
                 {organizedKnockoutMatches.semiFinals.length > 0 && (
-                <div className="flex flex-col space-y-32 mt-24">
-                  <div className="text-center mb-2">
-                    <span className="text-sm font-medium text-gray-500">Semi-finals</span>
-                  </div>
+                  <div className="flex flex-col space-y-32 mt-24">
+                    <div className="text-center mb-2">
+                      <span className="text-sm font-medium text-gray-500">Semi-finals</span>
+                    </div>
 
-                  {organizedKnockoutMatches.semiFinals.map((match) => (
+                    {organizedKnockoutMatches.semiFinals.map((match) => (
                       <div key={match.id} className="w-64 border border-gray-200 rounded-lg p-3">
                         <div className="text-xs text-gray-500 mb-2">
                           {match.date.toLocaleDateString()} • {match.startTime} - {match.endTime}
@@ -501,7 +509,7 @@ export default function Result({ tournamentId }: ResultProps) {
                           <span className="font-medium">{match.team2.name}</span>
                           <span className="font-bold">{match.score2}</span>
                         </div>
-                        
+
                         <div className="mt-2 flex items-center justify-between">
                           <input
                             type="file"
@@ -510,7 +518,7 @@ export default function Result({ tournamentId }: ResultProps) {
                             ref={el => (fileInputRefs.current[match.id] = el)}
                             onChange={() => handleUpdateResult(match.id)}
                           />
-                        <button
+                          <button
                             onClick={() => triggerFileInput(match.id)}
                             className="text-primary-600 hover:text-primary-800 text-sm flex items-center justify-start space-x-1"
                           >
@@ -527,7 +535,7 @@ export default function Result({ tournamentId }: ResultProps) {
                         </div>
                       </div>
                     ))}
-                </div>
+                  </div>
                 )}
                 {/* Final */}
                 <div className="flex flex-col mt-56">
@@ -536,7 +544,7 @@ export default function Result({ tournamentId }: ResultProps) {
                   </div>
 
                   {organizedKnockoutMatches.final.map((match) => (
-                      <div key={match.id} className="w-64 border border-gray-200 rounded-lg p-3 mt-28">
+                    <div key={match.id} className="w-64 border border-gray-200 rounded-lg p-3 mt-28">
                       <div className="text-xs text-gray-500 mb-2">
                         {match.date.toLocaleDateString()} • {match.startTime} - {match.endTime}
                       </div>
@@ -550,7 +558,7 @@ export default function Result({ tournamentId }: ResultProps) {
                         <span className="font-medium">{match.team2.name}</span>
                         <span className="font-bold">{match.score2}</span>
                       </div>
-                      
+
                       <div className="mt-2 flex items-center justify-between">
                         <input
                           type="file"
@@ -559,7 +567,7 @@ export default function Result({ tournamentId }: ResultProps) {
                           ref={el => (fileInputRefs.current[match.id] = el)}
                           onChange={() => handleUpdateResult(match.id)}
                         />
-                      <button
+                        <button
                           onClick={() => triggerFileInput(match.id)}
                           className="text-primary-600 hover:text-primary-800 text-sm flex items-center justify-start space-x-1"
                         >
@@ -575,7 +583,7 @@ export default function Result({ tournamentId }: ResultProps) {
                         </button>
                       </div>
                     </div>
-                    ))}
+                  ))}
                 </div>
               </div>
             </div>

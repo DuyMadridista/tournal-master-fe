@@ -21,6 +21,7 @@ interface TimeSlot {
   startTime: string
   endTime: string
   matches: Match | null
+  fieldIndex?: number
 
 }
 
@@ -362,13 +363,14 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
 }
 
 // Component for a match that can be dragged
-function DraggableMatch({ match, tournament, date }: { match: Match, tournament?: Tournament, date: Date }) {
-  
+function DraggableMatch({ match, tournament, date, fieldIndex }: { match: Match, tournament?: Tournament, date: Date, fieldIndex?: number }) {
+
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: match.id,
     data: { match },
   });
-
+  console.log(match);
+  
   const team1Name = match.teamOne?.teamName || "Tobe decided...";
   const team2Name = match.teamTwo?.teamName || "Tobe decided...";
 
@@ -403,7 +405,7 @@ function DraggableMatch({ match, tournament, date }: { match: Match, tournament?
       </div>
       <div className="mt-2 text-xs text-gray-500 flex items-center justify-center">
         <MapPin className="h-3 w-3 mr-1" />
-        {tournament?.place}  {date? "-" + date.getDate() : ""}
+        {fieldIndex !== undefined && `Field ${fieldIndex}`} - {tournament?.place}  
       </div>
     </div>
   );
@@ -414,7 +416,8 @@ function SlotDropArea({ slot, tournament }: { slot: TimeSlot, tournament?: Tourn
   const { setNodeRef, isOver } = useDroppable({
     id: slot.id,
   })
-
+  console.log("hehe",slot);
+  
   return (
     <div
       ref={setNodeRef}
@@ -438,7 +441,7 @@ function SlotDropArea({ slot, tournament }: { slot: TimeSlot, tournament?: Tourn
           <p className="text-gray-400 mt-1">Drop match here</p>
         </div>
       ) : (
-        <div>{slot.matches && <DraggableMatch match={slot.matches} tournament={tournament} date={slot.date} />}</div>
+        <div>{slot.matches && <DraggableMatch match={slot.matches} tournament={tournament} date={slot.date} fieldIndex={slot.fieldIndex} />}</div>
       )}
     </div>
   )

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import type { Team } from "../types/tournament"
 import ActionToolbar from "../components/ui-elements/ActionToolbar"
-import { Plus, FileUp, Grid, Pencil, Trash, Users, Mail, Phone, UserCircle } from "lucide-react"
+import { Plus, FileUp, Grid, Pencil, Trash, Users, Mail, Phone, UserCircle, FileDown } from "lucide-react"
 import SkeletonLoader from "../components/ui-elements/SkeletonLoader"
 import PlayerManagementModal from "../components/player-management/PlayerManagementModal"
 import axios from "axios"
@@ -40,7 +40,7 @@ interface ApiResponse {
   }
 }
 
-  
+
 
 interface ParticipantsProps {
   tournamentId?: string
@@ -66,7 +66,7 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [sortValue, setSortValue] = useState<string>("teamName")
-  const [sortType, setSortType] = useState<"ASC"|"DESC">("ASC")
+  const [sortType, setSortType] = useState<"ASC" | "DESC">("ASC")
   const token = getLocalStorage('token')
   const [format, setFormat] = useState<string>("GROUP_STAGE")
 
@@ -315,27 +315,35 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
         showFilter={true}
       >
         {canEdit() && (<>
-        
-          <button
-          onClick={() => setShowAddForm(true)}
-          className="btn btn-md btn-primary flex items-center space-x-2"
-          disabled={isLoading}
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add New</span>
-        </button>
 
-        <button
-          onClick={handleImportTeams}
-          className="btn btn-md btn-secondary flex items-center space-x-2"
-          disabled={isLoading || importLoading}
-        >
-          <FileUp className="h-5 w-5" />
-          <span>{importLoading ? "Importing..." : "Import Teams"}</span>
-        </button>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="btn btn-md btn-primary flex items-center space-x-2"
+            disabled={isLoading}
+          >
+            <Plus className="h-5 w-5" />
+            <span>Add New</span>
+          </button>
+
+          <button
+            onClick={handleImportTeams}
+            className="btn btn-md btn-secondary flex items-center space-x-2"
+            disabled={isLoading || importLoading}
+          >
+            <FileUp className="h-5 w-5" />
+            <span>{importLoading ? "Importing..." : "Import Teams"}</span>
+          </button>
+          <a
+            href="/template/Sample_Team.xlsx"
+            download
+            className="btn btn-md btn-outline flex items-center space-x-2"
+          >
+            <FileDown className="h-5 w-5" />
+            <span>Download Template</span>
+          </a>
         </>
-      )}
-        
+        )}
+
         <input
           ref={fileInputRef}
           type="file"
@@ -345,16 +353,16 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
         />
 
         {format === "GROUP_STAGE" && (
-        <button
-          onClick={handleGenerateGroups}
-          className="btn btn-md bg-purple-600 text-white hover:bg-purple-700 flex items-center space-x-2"
-          disabled={isLoading}
-        >
-          <Grid className="h-5 w-5" />
-          <span>Generate Groups</span>
-        </button>
-              )}
-        </ActionToolbar>
+          <button
+            onClick={handleGenerateGroups}
+            className="btn btn-md bg-purple-600 text-white hover:bg-purple-700 flex items-center space-x-2"
+            disabled={isLoading}
+          >
+            <Grid className="h-5 w-5" />
+            <span>Generate Groups</span>
+          </button>
+        )}
+      </ActionToolbar>
 
       {showAddForm && (
         <div className="mb-6 p-6 bg-white rounded-xl border border-primary-200 shadow-md animate-in">
@@ -490,27 +498,27 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
                       <span className="text-neutral-700">{team.playerCount}</span>
                     </button>
                   </td>
-                  { canEdit() && (
+                  {canEdit() && (
                     <td className="table-cell">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEditTeam(team.id)}
-                        className="p-1 text-secondary-600 hover:text-secondary-800 hover:bg-secondary-50 rounded-full transition-colors"
-                        disabled={isLoading}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTeam(team.id)}
-                        className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
-                        disabled={isLoading}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEditTeam(team.id)}
+                          className="p-1 text-secondary-600 hover:text-secondary-800 hover:bg-secondary-50 rounded-full transition-colors"
+                          disabled={isLoading}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeam(team.id)}
+                          className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-full transition-colors"
+                          disabled={isLoading}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
                   )}
-                  
+
                 </tr>
               ))
             )}
@@ -520,15 +528,15 @@ export default function Participants({ tournamentId }: ParticipantsProps) {
 
       {/* Player Management Modal */}
       {selectedTeam && (
-  <PlayerManagementModal
-    tournamentId={tournamentId}
-    team={selectedTeam}
-    onClose={() => {
-      setSelectedTeam(null);
-      fetchTeams();
-    }}
-  />
-)}
+        <PlayerManagementModal
+          tournamentId={tournamentId}
+          team={selectedTeam}
+          onClose={() => {
+            setSelectedTeam(null);
+            fetchTeams();
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {teamIdToDelete && (
