@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Box } from '@mui/material';
 import Image from 'next/image';
 
-const GOOGLE_AUTH_URL = process.env.NEXT_PUBLIC_GOOGLE_AUTH_URL || 'http://localhost:6969/api/auth/google';
+const GOOGLE_AUTH_URL = process.env.NEXT_PUBLIC_GOOGLE_AUTH_URL || 'https://halamadrid.me/api/auth/google';
 
 const GoogleLoginButton = () => {
   const handleGoogleLogin = () => {

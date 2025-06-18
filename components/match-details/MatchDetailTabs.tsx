@@ -72,7 +72,7 @@ export default function MatchDetailTabs({ matchId }: { matchId: string }) {
       setLoading(true)
       setError(null)
       try {
-        const res = await axios.get(`http://localhost:6969/api/tournament/31/match/result/${matchId}`)
+        const res = await axios.get(`https://halamadrid.me/api/tournament/31/match/result/${matchId}`)
         const data = res.data.data
         const matchData = data.match
         const players = data.listPlayerMatch

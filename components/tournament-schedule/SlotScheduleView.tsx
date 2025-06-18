@@ -10,28 +10,10 @@ import api from "@/apis/api"
 import { useParams } from "next/navigation"
 import { Tournament } from "@/types/tournament"
 import ScheduleAnalyzer from "./ScheduleAnalyzer"
+import { Match } from "@/app/tournaments/[id]/schedule/page"
 
 
-interface Match {
-  id: string
-  date: Date
-  startTime: string
-  endTime: string
-  teamOne: {
-    teamId: string
-    teamName: string
-  }
-  teamTwo: {
-    teamId: string
-    teamName: string
-  }
-  venue?: string
-  round?: string
-  group?: string
-  completed: boolean
-  matchDayId: string
-  type: string
-}
+
 
 interface TimeSlot {
   id: string
@@ -47,11 +29,12 @@ interface SlotScheduleViewProps {
   onUpdateMatch: (matchId: string, slotID: string) => Promise<void>
   dateFilter: "all" | string
   eventDates: any[]
-  tournament: Tournament | null
+  tournament?: Tournament 
+  plan?: any
   onAfterGenerate?: () => void
 }
 
-export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, eventDates, tournament, onAfterGenerate }: SlotScheduleViewProps) {
+export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, eventDates, tournament, onAfterGenerate, plan }: SlotScheduleViewProps) {
   const params = useParams()
 
   const tournamentId = params?.id as string
@@ -59,15 +42,15 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [showAnalysis, setShowAnalysis] = useState(false)
-  const [planSettings, setPlanSettings] = useState({
-    matchDuration: 60,
-    timeBetweenMatches: 10,
-    startTime: "08:00",
-    endTime: "18:00",
-  })
+  const [planSettings, setPlanSettings] = useState(plan)
 
 
-
+  console.log(plan);
+  console.log("Plan settings sàdsvgsd:", planSettings);
+  
+  useEffect(() => {
+  setPlanSettings(plan);
+}, [plan]);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -115,7 +98,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
   }
 
   const handlePlanSettingChange = (setting: keyof typeof planSettings, value: string | number) => {
-    setPlanSettings((prev) => ({
+    setPlanSettings((prev : any) => ({
       ...prev,
       [setting]: value,
     }))
@@ -297,7 +280,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
               <input
                 disabled={isLoading}
                 type="number"
-                value={planSettings.matchDuration}
+                value={planSettings.matchDuration || ""}
                 onChange={(e) => handlePlanSettingChange("matchDuration", Number.parseInt(e.target.value))}
                 className="flex-1 input input-bordered"
               />
@@ -313,7 +296,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
               <input
                 disabled={isLoading}
                 type="number"
-                value={planSettings.timeBetweenMatches}
+                value={planSettings.timeBetweenMatches || ""}
                 onChange={(e) => handlePlanSettingChange("timeBetweenMatches", Number.parseInt(e.target.value))}
                 className="flex-1 input input-bordered"
               />
@@ -329,7 +312,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
               <input
                 disabled={isLoading}
                 type="time"
-                value={planSettings.startTime}
+                value={planSettings.startTime || ""}
                 onChange={(e) => handlePlanSettingChange("startTime", e.target.value)}
                 className="w-full input input-bordered"
               />
@@ -345,7 +328,7 @@ export default function SlotScheduleView({ matches, onUpdateMatch, dateFilter, e
               <input
                 disabled={isLoading}
                 type="time"
-                value={planSettings.endTime}
+                value={planSettings.endTime || ""}
                 onChange={(e) => handlePlanSettingChange("endTime", e.target.value)}
                 className="w-full input input-bordered"
               />

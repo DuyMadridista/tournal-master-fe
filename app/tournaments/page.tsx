@@ -25,7 +25,7 @@ import { toast } from "react-toastify"
 import { canEdit } from "@/utils/roleUtils"
 
 // Define tournament format types
-type TournamentFormat = "KNOCKOUT" | "GROUP_STAGE" | "LEAGUE"
+type TournamentFormat = "KNOCKOUT" | "GROUP_STAGE" | "ROUND_ROBIN"
 
 // Define tournament creation form data
 interface TournamentFormData {
@@ -34,6 +34,7 @@ interface TournamentFormData {
   place: string
   categoryId: number
   numberOfPlayers: number
+  numberOfFields: number
   format: TournamentFormat
   numberOfGroups?: number
   teamsPerGroup?: number
@@ -69,7 +70,8 @@ export default function TournamentsPage() {
     place: "",
     categoryId: 0,
     numberOfPlayers: 0,
-    format: "KNOCKOUT",
+    numberOfFields: 0,
+    format: "ROUND_ROBIN",
     eventDates: []
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -315,7 +317,8 @@ function getStatusLabel(status: Tournament['status']) {
         place: "",
         categoryId: 0,
         numberOfPlayers: 0,
-        format: "KNOCKOUT",
+        numberOfFields: 0,
+        format: "ROUND_ROBIN",
         eventDates: []
       })
       setDates([])
@@ -537,6 +540,8 @@ function getStatusLabel(status: Tournament['status']) {
                       className="input w-full h-24"
                     />
                   </div>
+
+                  
                 </div>
               </div>
               
@@ -571,14 +576,12 @@ function getStatusLabel(status: Tournament['status']) {
                       onChange={handleInputChange}
                       className="input w-full"
                     >
-                      <option value="KNOCKOUT">Knockout</option>
                       <option value="GROUP_STAGE">Group Stage</option>
                       <option value="ROUND_ROBIN">Round Robin</option>
-                      <option value="SINGLE_ELIMINATION">Single Elimination</option>
                     </select>
                   </div>
                   
-                  <div className="md:col-span-2">
+                  <div >
                     <label className="block text-neutral-800 font-medium mb-2">
                       Event Dates <span className="text-red-500">*</span>
                     </label>
@@ -603,6 +606,21 @@ function getStatusLabel(status: Tournament['status']) {
                       <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 pointer-events-none" />
                     </div>
                     {errors.eventDates && <p className="text-red-500 text-sm mt-1">{errors.eventDates}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-neutral-800 font-medium mb-2">
+                      Number of Fields <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="numberOfFields"
+                      value={formData.numberOfFields || ''}
+                      onChange={handleInputChange}
+                      min="0"
+                      placeholder="Enter number of fields"
+                      className={`input w-full ${errors.numberOfFields ? 'border-red-500' : ''}`}
+                    />
+                    {errors.numberOfFields && <p className="text-red-500 text-sm mt-1">{errors.numberOfFields}</p>}
                   </div>
                 </div>
               </div>

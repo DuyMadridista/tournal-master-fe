@@ -70,7 +70,7 @@ interface ScheduleAnalyzerProps {
     suggestedStartTime: string,
     suggestedEndTime: string,
   ) => void
-  tournament: Tournament | null
+  tournament?: Tournament
 }
 
 export default function ScheduleAnalyzer({ matches, onMoveMatchSuggestion, tournament }: ScheduleAnalyzerProps) {

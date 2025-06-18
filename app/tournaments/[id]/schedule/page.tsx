@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { Calendar, List, FileDown, Plus, Filter, ChevronLeft, ChevronRight, Clock } from "lucide-react"
-import { useDataFetching } from "../../../../context/DataFetchingContext"
 import LoadingSpinner from "../../../../components/ui-elements/LoadingSpinner"
 import CalendarView from "../../../../components/tournament-schedule/CalendarView"
 import ListScheduleView from "../../../../components/tournament-schedule/ListScheduleView"
@@ -13,7 +12,7 @@ import { toast } from "react-toastify"
 import api, { getTournamentById } from "@/apis/api"
 import { Tournament } from "@/types/tournament"
 
-interface Match {
+ export interface Match {
   id: string
   date: Date
   startTime: string
@@ -44,7 +43,12 @@ export default function TournamentSchedulePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [dateFilter, setDateFilter] = useState<"all" | string>("all")
-  const { simulateFetch } = useDataFetching()
+  const [planSettings, setPlanSettings] = useState({
+    matchDuration: 60,
+    timeBetweenMatches: 30,
+    startTime: "17:00",
+    endTime: "21:00",
+  })
 
   const loadMatches = async () => {
     setIsLoading(true)
@@ -66,10 +70,18 @@ export default function TournamentSchedulePage() {
   useEffect(() => {
     getTournamentById(tournamentId).then((res) => {
       setTournament(res.data)
+      console.log(res.additionalData.tournamentPlan);
+      setPlanSettings({
+        matchDuration: res.additionalData.tournamentPlan?.matchDuration ,
+        timeBetweenMatches: res.additionalData.tournamentPlan?.timeBetween ,
+        startTime: res.additionalData.tournamentPlan?.startTimeDefault ,
+        endTime: res.additionalData.tournamentPlan?.endTimeDefault ,
+      })
     })
     loadMatches()
   }, [tournamentId])
-
+  console.log("Plan Settings:", planSettings);
+  
   const mapEventDatesToMatches = (eventDates: any) => {
     const matches: Match[] = []
 
@@ -263,6 +275,7 @@ export default function TournamentSchedulePage() {
           eventDates={eventDates}
           tournament={tournament}
           onAfterGenerate={handleAfterGenerate}
+          plan={planSettings}
         />
       )}
     </div>

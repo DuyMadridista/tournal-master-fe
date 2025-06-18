@@ -122,7 +122,7 @@ export default function TournamentOverview() {
     const loadTournament = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch(`http://localhost:6969/api/tournament/overview/${tournamentId}`)
+        const response = await fetch(`https://halamadrid.me/api/tournament/overview/${tournamentId}`)
         const data = await response.json()
         
         // Set tournament details

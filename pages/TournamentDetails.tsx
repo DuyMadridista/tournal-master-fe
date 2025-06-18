@@ -37,7 +37,7 @@ export default function TournamentDetails({ tournamentId }: { tournamentId: stri
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`http://localhost:6969/api/tournament/${tournamentId}`);
+        const res = await axios.get(`https://halamadrid.me/api/tournament/${tournamentId}`);
         const data = res.data.data;
         const progress = res.data.additionalData?.progress;
         // Map category (may be object)
