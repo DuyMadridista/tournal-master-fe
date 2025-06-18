@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Loading from '../help/loading';
+import Loading from '../app/help/loading';
 
 const OAuthCallback = () => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const OAuthCallback = () => {
 
       if (access_token && user) {
         // Dynamically import auth handling logic
-        const { setAuthToken, setUserData } = await import('../../utils/authCookies');
+        const { setAuthToken, setUserData } = await import('../utils/authCookies');
 
         setAuthToken(access_token);
         setUserData(JSON.parse(user));
